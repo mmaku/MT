@@ -17,7 +17,13 @@ source("07 admmGSLOPE.R")
 
 
 
-benchOne <- function(data, alpha = .05, penalizeDiagonal = F, truncate = T, epsilon = 10e-4, mu = 1, selectCriterion = "stars")
+benchOne <- function(data, 
+                     alpha = .05, 
+                     penalizeDiagonal = F, 
+                     truncate = T, 
+                     epsilon = 10e-4, 
+                     mu = 1, 
+                     selectCriterion = "stars")
 {
     sampleCovariance <- cov(data)
     
@@ -64,7 +70,21 @@ benchOne <- function(data, alpha = .05, penalizeDiagonal = F, truncate = T, epsi
                 alpha = alpha,
                 selectMethod = selectCriterion))
 }
+
+
+strictGraphicalFDR <- function(estimatedMatrix, realMatrix)
+{
+    # H_0: x_ij == 0
+    falsePositive <- sum(estimatedMatrix[realMatrix == 0] != 0)
+    predictedPositive <- sum(estimatedMatrix != 0)
     
+    return(falsePositive/predictedPositive)
+}
+
+x <- matrix(c(1,2,3,0,0,1,2,3,4,0,0,4,2,2,4,5), nrow = 4, ncol = 4)
+sum(t(x)[x == 0] != 0)
+
+
 meltingMatrix <- function(matrix, index = NULL)
 {
     colnames(matrix) <- 1:ncol(matrix)
