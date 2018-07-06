@@ -1,0 +1,28 @@
+# Written by Micha³ Makowski
+
+# Soft thresholding functions definitions
+
+require(SLOPE)
+
+OWL1fastprox <- function(entries, 
+                         lambdaSeries)
+{
+    prox_sorted_L1(entries, lambdaSeries, method = c("c"))
+}
+
+matrixOWL1prox <- function(matrix, 
+                           lambdaSeries, #must be sorted!
+                           penalizeDiagonal = TRUE)
+{
+    out <- matrix
+    
+    precisionEntries <- matrix[lower.tri(matrix, penalizeDiagonal)]
+    
+    calculatedEntries <- OWL1fastprox(abs(precisionEntries), lambdaSeries)
+    
+    out[lower.tri(out, penalizeDiagonal)] <- calculatedEntries
+    out <- t(out)
+    out[lower.tri(out, penalizeDiagonal)] <- calculatedEntries
+
+    out
+}
