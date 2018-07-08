@@ -1,4 +1,4 @@
-# Written by Micha≥ Makowski
+# Written by Micha≈Ç Makowski
 
 # install.packages("SLOPE")
 
@@ -19,7 +19,7 @@ gslopeADMM <- function(sampleCovariance,
                        maxIter = 1e5, 
                        absoluteEpsilon = 1e-4, 
                        relativeEpsilon = 1e-4, 
-                       truncate = TRUE)
+                       truncate = F)
 {
     lambda <- sort(lambda, decreasing = T)
     

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1530973261551.000,
+    "dirty" : false,
+    "encoding" : "CP1250",
+    "folds" : "",
+    "hash" : "4145589359",
+    "id" : "DDA57BCC",
+    "lastKnownWriteTime" : 1528157109,
+    "last_content_update" : 1528157109,
+    "path" : "~/01 Projekty/02 Magisterka/gSLOPE/08 admmGSLOPEbenchmarking.R",
+    "project_path" : "08 admmGSLOPEbenchmarking.R",
+    "properties" : {
+        "cursorPosition" : "0,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

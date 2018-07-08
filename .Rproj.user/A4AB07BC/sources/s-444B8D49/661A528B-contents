@@ -1,4 +1,4 @@
-# Written by Micha≥ Makowski
+# Written by Micha≈Ç Makowski
 
 require(ggplot2)
 require(reshape)
@@ -12,24 +12,21 @@ plotCovarianceStructure <- function(covariance_structure2)
 	df1 <- melt(covariance_structure2)
 	df1$value <- as.factor(df1$value)
 	
-	covPlot <- ggplot(df1, aes(x=X1, y=X2)) + geom_tile(aes(fill=value)) +
-	    theme(axis.ticks = element_blank(), 
-	          axis.text.x = element_text(angle = 330, hjust = 0, vjust = 1, colour = "grey50"),
-	          axis.text.y = element_text(colour = "grey50"),
-	          panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
-	          panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
-	          panel.background = element_rect(fill = "white", colour = "white"))
+	ggplot(df1, aes(x=X1, y=X2)) + geom_tile(aes(fill=value)) +
+		theme(axis.ticks = element_blank(), axis.text.x = element_text(angle = 330, hjust = 0, vjust = 1, colour = "grey50"),
+					axis.text.y = element_text(colour = "grey50"),
+					panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
+					panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+					panel.background = element_rect(fill = "white", colour = "white"))
 	
-	return(covPlot)
 }
 
 is.zero <- function(x)
 {
-    return(x == 0)
+    x == 0
 }
 
-plotMatrix <- function(matrix, 
-                       title = NULL)
+plotMatrix<- function(matrix, title = NULL)
 {
 	colnames(matrix) <- 1:ncol(matrix)
 	rownames(matrix) <- 1:ncol(matrix)
@@ -37,10 +34,9 @@ plotMatrix <- function(matrix,
 	
 	colnames(properData) <- c("X1", "X2", "value")
 
-    matrixPlot <- ggplot(properData, aes(x=X1, y=X2)) + 
+    ggplot(properData, aes(x=X1, y=X2)) + 
         geom_tile(data = subset(properData, !is.zero(value)), aes(fill = value)) +
-        geom_tile(data = subset(properData,  is.zero(value)), aes(colour = "0"), 
-                  linetype = 0, fill = "grey50", alpha = .5) +
+        geom_tile(data = subset(properData,  is.zero(value)), aes(colour = "0"), linetype = 0, fill = "grey50", alpha = .5) +
 	    labs(title = title, x = TeX('$X_1$'), y = TeX('$X_2$')) +
         scale_fill_gradient(name="Matrix\nentry\nvalue",
                             limits = c(.Machine$double.eps, NA)) +
@@ -49,24 +45,27 @@ plotMatrix <- function(matrix,
                colour = guide_legend(order = 2, keywidth = 1, keyheight = 1, title.position = "bottom")) +
 	    theme_minimal() +
         theme(legend.spacing.y = unit(-0.3, "cm"))
-    
-    return(matrixPlot)
+}
+
+power <- function(matrix, res)
+{
+	p=ncol(matrix)
+	(sum(matrix!=0 & res!=0)-p)/(sum(matrix!=0)-p)
+}
+
+FDR <- function(matrix, res)
+{
+	p=ncol(matrix)
+	sum(matrix==0 & res!=0)/max(1, sum(res!=0)-p)
 }
 
 localFDR <- function(matrix, res)
 {
 	p=ncol(matrix)
-
-	
-		sapply(1:p, function(i) sum(matrix[,i]==0 & res[,i]!=0)/max(1, sum(res[,i]!=0)-1))
+	sapply(1:p, function(i) sum(matrix[,i]==0 & res[,i]!=0)/max(1, sum(res[,i]!=0)-1))
 }
 
-dataSimulator <- function(n = 100, 
-                          SNR = 1, 
-                          K = 10, 
-                          numb.vars = 30, 
-                          max.dim = 2, 
-                          equal.dims = TRUE)
+dataSimulator <- function(n = 100, SNR = 1, K = 10, numb.vars = 30, max.dim = 2, equal.dims = TRUE)
 {         
     sigma <- 1/SNR
     if (equal.dims)
@@ -89,9 +88,9 @@ dataSimulator <- function(n = 100,
         s <- c(s, rep(j, numb.vars))
     }
     
-    return(list(X = X, 
-                signals = Y, 
-                factors = factors, 
-                dims = dims, 
-                s = s))
+    list(X = X, 
+         signals = Y, 
+         factors = factors, 
+         dims = dims, 
+         s = s)
 }

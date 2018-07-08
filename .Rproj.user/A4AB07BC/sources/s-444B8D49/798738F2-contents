@@ -1,4 +1,4 @@
-# Written by Micha≥ Makowski
+# Written by Micha≈Ç Makowski
 
 # Soft thresholding functions definitions
 
@@ -7,7 +7,7 @@ require(SLOPE)
 OWL1fastprox <- function(entries, 
                          lambdaSeries)
 {
-    return(prox_sorted_L1(entries, lambdaSeries, method = c("c")))
+    prox_sorted_L1(entries, lambdaSeries, method = c("c"))
 }
 
 matrixOWL1prox <- function(matrix, 
@@ -24,5 +24,5 @@ matrixOWL1prox <- function(matrix,
     out <- t(out)
     out[lower.tri(out, penalizeDiagonal)] <- calculatedEntries
 
-    return(out)
+    out
 }
