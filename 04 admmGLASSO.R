@@ -10,12 +10,12 @@ source("02 softThresholding.R")
 # truncate - should entries below absoluteEpsilon be equal to zero?
 glassoADMM <- function(sampleCovariance, 
                        mu = 1, 
-                       lambda = 4,
+                       lambda = 1,
                        penalizeDiagonal = TRUE,
                        maxIter = 1e5, 
                        absoluteEpsilon = 1e-4, 
                        relativeEpsilon = 1e-4, 
-                       truncate = F)
+                       truncate = TRUE)
 {
     # Checks
     if(!is.matrix(lambda) & length(lambda)!=1 & length(lambda)!=nrow(sampleCovariance))

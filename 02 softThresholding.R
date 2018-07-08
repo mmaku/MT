@@ -13,11 +13,11 @@ softThresholding <- function(matrix,
     
     if(!penalizeDiagonal) diag(out) <- diag(matrix)
     
-    out
+    return(out)
 }
 
 softThresholding2 <- function(matrix, 
                               threshold)
 {
-    pmax(matrix-threshold, 0) - pmax(-matrix-threshold, 0)
+    return(pmax(matrix-threshold, 0) - pmax(-matrix-threshold, 0))
 }
