@@ -15,8 +15,11 @@ glassoADMM <- function(sampleCovariance,
                        maxIter = 1e5, 
                        absoluteEpsilon = 1e-4, 
                        relativeEpsilon = 1e-4, 
-                       truncate = TRUE)
+                       truncate = TRUE,
+                       verbose = TRUE)
 {
+    if(verbose) cat("Starting ADMM gLASSO procedure...")
+    
     # Checks
     if(!is.matrix(lambda) & length(lambda)!=1 & length(lambda)!=nrow(sampleCovariance))
     {
@@ -65,14 +68,14 @@ glassoADMM <- function(sampleCovariance,
         if(primalResidual < primalEpsilon & dualResidual < dualEpsilon) 
             break
         
-        if(n %% 10000 == 0)
-            print(paste(n, "iterations done..."), quote = F)
+        # if(n %% 10000 == 0)
+        #     print(paste(n, "iterations done..."), quote = F)
     }
     
     if(truncate)
         X[X < absoluteEpsilon] <- 0
     
-    print("ADMM gLASSO done.")
+    if(verbose) cat("done.\n")
     
     return(list(sampleCovariance = sampleCovariance,
                 lambda = lambda, 

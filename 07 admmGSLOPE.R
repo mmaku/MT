@@ -19,8 +19,11 @@ gslopeADMM <- function(sampleCovariance,
                        maxIter = 1e5, 
                        absoluteEpsilon = 1e-4, 
                        relativeEpsilon = 1e-4, 
-                       truncate = TRUE)
+                       truncate = TRUE,
+                       verbose = TRUE)
 {
+    if(verbose) cat("Starting ADMM gSLOPE procedure...")
+    
     lambda <- sort(lambda, decreasing = T)
     
     entriesNumber <- sum(1:(ncol(sampleCovariance)-!penalizeDiagonal))
@@ -66,14 +69,14 @@ gslopeADMM <- function(sampleCovariance,
         if(primalResidual < primalEpsilon & dualResidual < dualEpsilon) 
             break
         
-        if(n %% 10000 == 0)
-            print(paste(n, "iterations done..."), quote = F)
+        # if(verbose & (n %% 10000 == 0))
+        #     cat("\n", n ," iterations done...", sep = "")
     }
     
     if(truncate)
         X[X < absoluteEpsilon] <- 0
     
-    print("ADMM gSLOPE done.")
+    if(verbose) cat("done.\n")
     
     return(list(sampleCovariance = sampleCovariance,
                 lambda = lambda, 

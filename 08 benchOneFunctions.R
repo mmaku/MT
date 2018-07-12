@@ -17,8 +17,8 @@ source("07 admmGSLOPE.R")
 
 benchOne <- function(data, 
                      alpha = .05, 
-                     penalizeDiagonal = F, 
-                     truncate = T, 
+                     penalizeDiagonal = FALSE, 
+                     truncate = TRUE, 
                      epsilon = 10e-4, 
                      mu = 1, 
                      selectCriterion = "stars")
@@ -30,7 +30,6 @@ benchOne <- function(data,
     m     <- p*(p-1)/2
     mBanerjee <- p^2   
     banerjeeLassoLambda <- qt(1-alpha/2/mBanerjee, df = n-2)/sqrt(n-2+qt(1-alpha/2/mBanerjee, df = n-2)^2)
-    
     # gLASSO
     gLassoADMM <- glassoADMM(sampleCovariance, mu = mu, lambda = banerjeeLassoLambda, 
                              penalizeDiagonal = penalizeDiagonal, truncate = truncate, absoluteEpsilon = epsilon)
