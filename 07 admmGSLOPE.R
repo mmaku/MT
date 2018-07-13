@@ -1,20 +1,26 @@
 # Written by Micha³ Makowski
 
+# TODO
+# Lamda default value
+
 # install.packages("SLOPE")
+require(SLOPE)
 
 source("06 OWL1prox.R")
 
-require(SLOPE)
-
-# C - sample covariance
+# sampleCovariance - sample covariance
 # mu - Augmented Lagrangian parameter
-# lambda - Regularization parameter controlling sparsity
+# lambda - sequence of lambda regularizators (ordered L1 norm)
+# alpha - if lambda is NULL, then alpha is used for sequence construction
 # maxIter - maximum number of iterations
 # absoluteEpsilon - used in residual stopping criterium
 # truncate - should entries below absoluteEpsilon be equal to zero?
+# verbose - console output
+
 gslopeADMM <- function(sampleCovariance, 
                        mu = 1, 
                        lambda = NULL, 
+                       alpha = NULL,
                        penalizeDiagonal = TRUE,
                        maxIter = 1e5, 
                        absoluteEpsilon = 1e-4, 
@@ -22,23 +28,36 @@ gslopeADMM <- function(sampleCovariance,
                        truncate = TRUE,
                        verbose = TRUE)
 {
-    if(verbose) cat("Starting ADMM gSLOPE procedure...")
+    # Console output
     
-    lambda <- sort(lambda, decreasing = T)
+    if(verbose) 
+    {
+        cat("Starting ADMM gsLOPE procedure...")
+        progressBar <- txtProgressBar(min = 0, max = 1/absoluteEpsilon, style = 3)
+        setTxtProgressBar(progressBar, 0)
+    }    
+    
+    # Sequence length
     
     entriesNumber <- sum(1:(ncol(sampleCovariance)-!penalizeDiagonal))
     
+    # Lambda preparation
+    
+    lambda <- sort(lambda, decreasing = T)
+        
     if(length(lambda) < entriesNumber) 
         lambda <- c(lambda, rep(0, times = entriesNumber - length(lambda)))
-    
+        
     if(length(lambda) > entriesNumber) 
         lambda <- lambda[1:entriesNumber]   
-    
+
+    # Initialization
     
     Z <- sampleCovariance*0 # Initialize Lagragian to be nothing (seems to work well)
     Y <- Z 
     X <- diag(nrow = nrow(sampleCovariance))
 
+    # ADMM algotithm
     
     for(n in 1:maxIter)
     {
@@ -66,17 +85,18 @@ gslopeADMM <- function(sampleCovariance,
         primalEpsilon <- absoluteEpsilon # + relativeEpsilon*max(l2norm(X), l2norm(Y))
         dualEpsilon   <- absoluteEpsilon # + relativeEpsilon*l2norm(Z)
 
+        if(verbose)
+            setTxtProgressBar(progressBar, min(1/primalResidual, 1/dualResidual, 1/absoluteEpsilon))
+        
         if(primalResidual < primalEpsilon & dualResidual < dualEpsilon) 
             break
-        
-        # if(verbose & (n %% 10000 == 0))
-        #     cat("\n", n ," iterations done...", sep = "")
     }
     
     if(truncate)
         X[X < absoluteEpsilon] <- 0
     
-    if(verbose) cat("done.\n")
+    if(verbose) 
+        close(progressBar)
     
     return(list(sampleCovariance = sampleCovariance,
                 lambda = lambda, 

@@ -25,7 +25,7 @@ alpha <- 0.05
 m_banerjee <- p^2
 lambda <- qt(1-alpha/2/m_banerjee, df = n-2)/sqrt(n-2+qt(1-alpha/2/m_banerjee, df = n-2)^2)
 precisionGLASSO <- glasso(sampleCovariance, rho = lambda)$wi
-precisionGLASSOADMM <- glassoADMM(sampleCovariance, lambda = lambda, penalizeDiagonal = F, truncate = T)$precisionMatrix
+precisionGLASSOADMM <- glassoADMM(sampleCovariance, lambda = lambda, penalizeDiagonal = T, truncate = T)$precisionMatrix
 
 k = 1:m
 lambdaBis <- qt(1-alpha*k/2/m, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/m, df = n-2)^2)

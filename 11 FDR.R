@@ -1,6 +1,5 @@
 # Written by Micha³ Makowski
 
-# install.packages("MASS")
 # install.packages("glasso")
 # install.packages("huge")
 
@@ -8,72 +7,86 @@ require(glasso)
 require(huge)
 
 source("01 auxilaryFunctions.R")
-source("04 admmGLASSO.R")
 source("07 admmGSLOPE.R")
-source("10 contingencyMeasures.R")
+source("10 simpleMeasures.R")
 
-FDR <- function(n=200, 
-                d=200, 
-                graph="cluster",
-                alpha = .05, 
-                penalizeDiagonal = FALSE, 
-                epsilon = 10e-4, 
-                simulationsNumber = 1000,  # Numer of graphs simulated to calculated FDR
-                verbose = TRUE)
+measures <- function(n=150, 
+                     p=200, 
+                     graph="cluster",
+                     alpha = .1, 
+                     penalizeDiagonal = FALSE, 
+                     epsilon = 10e-4, 
+                     simulationsNumber = 1000,  # Numer of graphs simulated to calculated FDR
+                     verbose = TRUE)
 {
     if(verbose) 
     {
-        cat("Starting FDR simulations\nn = ", n, "\nd = ", d, "\ngraph structure = ", graph, 
-                    "\nsimulations number = ", simulationsNumber, "\n")
-        progressBar <- txtProgressBar(min = 1, max = simulationsNumber,style = 3)
-        setTxtProgressBar(progressBar, 1)
+        cat("Starting FDR, Sensitivity & Specificity simulations\nn = ", 
+            n, "\np = ", p, "\ngraph structure = ", graph, 
+            "\nsimulations number = ", simulationsNumber, "\n")
+        
+        progressBar <- txtProgressBar(min = 0, max = simulationsNumber, style = 3)
+        setTxtProgressBar(progressBar, 0)
     }
     
-    FDPgLASSO <- NULL
-    FDPgSLOPE <- NULL
+    gLASSO <- list(FDR = NULL,
+                   SN = NULL,
+                   SP = NULL)
     
-    SNgLASSO <- NULL
-    SNgSLOPE <- NULL
+    BSgSLOPE <- list(FDR = NULL,
+                     SN = NULL,
+                     SP = NULL)
+    
+    BHgSLOPE <- list(FDR = NULL,
+                     SN = NULL,
+                     SP = NULL)
     
     # gLASSO parameters
-    m     <- d*(d-1)/2
-    mBanerjee <- d^2   
-    banerjeeLassoLambda <- qt(1-alpha/2/mBanerjee, df = n-2)/sqrt(n-2+qt(1-alpha/2/mBanerjee, df = n-2)^2)
-    
+    banerjeeLambda <- lambdaSelector(p, n, alpha, method = "banerjee", verbose = FALSE)
+        
     # gSLOPE parameters
-    k = 1:m
-    BHlambda <- qt(1-alpha*k/2/m, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/m, df = n-2)^2)
-    BHSlopeLambda <- c(rep(BHlambda[1], d), rep(BHlambda, each=2))
+    BSlambda <- lambdaSelector(p, n, alpha, method = "BS", verbose = FALSE) 
+    BHlambda <- lambdaSelector(p, n, alpha, method = "BH", verbose = FALSE) 
     
     for(i in 1:simulationsNumber)
     {
-        graphHUGE <- huge.generator(n, d, graph, verbose = FALSE) 
+        graphHUGE <- huge.generator(n, p, graph, verbose = FALSE) 
         
-        omegaHATgLASSO <- glasso(graphHUGE$sigmahat, rho = banerjeeLassoLambda, thr = epsilon,
+        omegaHATgLASSO <- glasso(graphHUGE$sigmahat, rho = banerjeeLambda, thr = epsilon,
                                  penalize.diagonal = penalizeDiagonal)$wi
 
-        # omegaHATgLASSO <- glassoADMM(graphHUGE$sigmahat, lambda = banerjeeLassoLambda, 
+        # omegaHATgLASSO <- glassoADMM(graphHUGE$sigmahat, lambda = banerjeeLambda, 
         #                              penalizeDiagonal = penalizeDiagonal, 
         #                              truncate = TRUE, absoluteEpsilon = epsilon, verbose = FALSE)$precisionMatrix
         
-        omegaHATgSLOPE <- gslopeADMM(graphHUGE$sigmahat, lambda = BHSlopeLambda, 
-                                     penalizeDiagonal = penalizeDiagonal, 
-                                     truncate = TRUE, absoluteEpsilon = epsilon, verbose = FALSE)$precisionMatrix
+        BSomegaHATgSLOPE <- gslopeADMM(graphHUGE$sigmahat, lambda = BSlambda,
+                                       penalizeDiagonal = penalizeDiagonal, 
+                                       truncate = TRUE, absoluteEpsilon = epsilon, verbose = FALSE)$precisionMatrix
+
+        BHomegaHATgSLOPE <- gslopeADMM(graphHUGE$sigmahat, lambda = BHlambda,
+                                       penalizeDiagonal = penalizeDiagonal, 
+                                       truncate = TRUE, absoluteEpsilon = epsilon, verbose = FALSE)$precisionMatrix
         
-        FDPgLASSO <- c(FDPgLASSO, FDP(omegaHATgLASSO, graphHUGE$omega))
-        FDPgSLOPE <- c(FDPgSLOPE, FDP(omegaHATgSLOPE, graphHUGE$omega))
+        gLASSO$FDR <- c(gLASSO$FDR, FDP(omegaHATgLASSO, graphHUGE$omega))
+        gLASSO$SN  <- c(gLASSO$SN, SN(omegaHATgLASSO, graphHUGE$omega))
+        gLASSO$SP  <- c(gLASSO$SP, SP(omegaHATgLASSO, graphHUGE$omega))
         
-        SNgLASSO <- c(SNgLASSO, SN(omegaHATgLASSO, graphHUGE$omega))
-        SNgSLOPE <- c(SNgSLOPE, SN(omegaHATgLASSO, graphHUGE$omega))
+        BSgSLOPE$FDR <- c(BSgSLOPE$FDR, FDP(BSomegaHATgSLOPE, graphHUGE$omega))
+        BSgSLOPE$SN  <- c(BSgSLOPE$SN, SN(BSomegaHATgSLOPE, graphHUGE$omega))
+        BSgSLOPE$SP  <- c(BSgSLOPE$SP, SP(BSomegaHATgSLOPE, graphHUGE$omega))
+        
+        BHgSLOPE$FDR <- c(BHgSLOPE$FDR, FDP(BHomegaHATgSLOPE, graphHUGE$omega))
+        BHgSLOPE$SN  <- c(BHgSLOPE$SN, SN(BHomegaHATgSLOPE, graphHUGE$omega))
+        BHgSLOPE$SP  <- c(BHgSLOPE$SP, SP(BHomegaHATgSLOPE, graphHUGE$omega))
         
         if(verbose)
             setTxtProgressBar(progressBar, i)
     }
+    
     if(verbose)
         close(progressBar)
     
-    return(list(gLASSO = list(FDR = sum(FDPgLASSO)/simulationsNumber,
-                              Sensitivity = sum(SNgLASSO)/simulationsNumber),
-                gSLOPE = list(FDR = sum(FDPgSLOPE)/simulationsNumber,
-                              Sensitivity = sum(SNgSLOPE)/simulationsNumber)))
+    return(list(gLASSO = lapply(gLASSO, function(x) sum(x)/simulationsNumber),
+                BSgSLOPE = lapply(BSgSLOPE, function(x) sum(x)/simulationsNumber),
+                BHgSLOPE = lapply(BHgSLOPE, function(x) sum(x)/simulationsNumber)))
 }

@@ -18,7 +18,12 @@ glassoADMM <- function(sampleCovariance,
                        truncate = TRUE,
                        verbose = TRUE)
 {
-    if(verbose) cat("Starting ADMM gLASSO procedure...")
+    if(verbose) 
+    {
+        cat("Starting ADMM gLASSO procedure...")
+        progressBar <- txtProgressBar(min = 0, max = 1/absoluteEpsilon, style = 3)
+        setTxtProgressBar(progressBar, 0)
+    }
     
     # Checks
     if(!is.matrix(lambda) & length(lambda)!=1 & length(lambda)!=nrow(sampleCovariance))
@@ -65,6 +70,9 @@ glassoADMM <- function(sampleCovariance,
         primalEpsilon <- absoluteEpsilon # + relativeEpsilon*max(l2norm(X), l2norm(Y))
         dualEpsilon   <- absoluteEpsilon # + relativeEpsilon*l2norm(Z)
         
+        if(verbose)
+            setTxtProgressBar(progressBar, min(1/primalResidual, 1/dualResidual, 1/absoluteEpsilon))
+        
         if(primalResidual < primalEpsilon & dualResidual < dualEpsilon) 
             break
         
@@ -75,7 +83,8 @@ glassoADMM <- function(sampleCovariance,
     if(truncate)
         X[X < absoluteEpsilon] <- 0
     
-    if(verbose) cat("done.\n")
+    if(verbose) 
+        close(progressBar)
     
     return(list(sampleCovariance = sampleCovariance,
                 lambda = lambda, 

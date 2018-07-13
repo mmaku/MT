@@ -2,6 +2,7 @@
 
 # Soft thresholding functions definitions
 
+# install.packages("SLOPE")
 require(SLOPE)
 
 OWL1fastprox <- function(entries, 

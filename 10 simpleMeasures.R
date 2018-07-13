@@ -42,11 +42,18 @@ FDP <- function(estimatedMatrix, realMatrix)
     return(FP(estimatedMatrix, realMatrix)/predictedPositive)
 }
 
-
 SN <- function(estimatedMatrix, realMatrix)
 {
     # H_0: x_ij == 0
     realPositive <- max(c(sum(realMatrix != 0), 1))
     
     return(TP(estimatedMatrix, realMatrix)/realPositive)
+}
+
+SP <- function(estimatedMatrix, realMatrix)
+{
+    # H_0: x_ij == 0
+    realNegative <- max(c(sum(realMatrix == 0), 1))
+    
+    return(TN(estimatedMatrix, realMatrix)/realNegative)
 }
