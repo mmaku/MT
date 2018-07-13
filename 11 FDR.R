@@ -86,7 +86,7 @@ measures <- function(n=150,
     if(verbose)
         close(progressBar)
     
-    return(list(gLASSO = lapply(gLASSO, function(x) sum(x)/simulationsNumber),
-                BSgSLOPE = lapply(BSgSLOPE, function(x) sum(x)/simulationsNumber),
-                BHgSLOPE = lapply(BHgSLOPE, function(x) sum(x)/simulationsNumber)))
+    return(list(gLASSO = lapply(gLASSO, mean),
+                BSgSLOPE = lapply(BSgSLOPE, mean),
+                BHgSLOPE = lapply(BHgSLOPE, mean)))
 }
