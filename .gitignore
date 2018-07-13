@@ -2,4 +2,5 @@
 *.png
 *.jpeg
 
-.Rproj.user
+# User files
+.Rproj.user/
