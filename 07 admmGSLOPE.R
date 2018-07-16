@@ -1,6 +1,7 @@
 # Written by Micha³ Makowski
 
 # TODO
+# Checks
 # Lamda default value
 
 # install.packages("SLOPE")

@@ -4,3 +4,8 @@
 
 # User files
 .Rproj.user/
+.Rproj.user
+
+# Other 
+!stupidThings.R
+.RData

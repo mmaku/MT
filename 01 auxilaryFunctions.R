@@ -9,6 +9,15 @@ require(reshape)
 require(MASS)
 require(latex2exp)
 
+# Simple upper triangle function
+
+upper <- function(input, diagonal = FALSE)
+{
+    return(input[upper.tri(input, diag = diagonal)])
+}
+
+# Covariance matrix plot
+
 plotCovarianceStructure <- function(covarianceMatrix)
 {
 	colnames(covarianceMatrix) <- 1:ncol(covarianceMatrix)
@@ -26,6 +35,8 @@ plotCovarianceStructure <- function(covarianceMatrix)
 	
 	return(covPlot)
 }
+
+# Simple zero check 
 
 is.zero <- function(x)
 {
@@ -57,61 +68,33 @@ plotMatrix <- function(matrix,
     return(matrixPlot)
 }
 
-# Banerjee for gLASSO
+# Banerjee for gLASSO (not sure if done properly - problem with sigma i.e. twoLargestProd if data not scaled)
 
-lambdaBanerjee <- function(input, n, alpha = 0.05, verbose = TRUE)
+lambdaBanerjee <- function(p, n, alpha = 0.05, twoLargestProd = 1)
 {
-    p <- ncol(input)
-    
-    if(!is.matrix(input))
-    {
-        p <- input[1]
-        twoLargestProd <- 1
-        
-    } else if(!isSymmetric(input))
-    {
-        if(verbose) cat("The input is identified as the data matrix.\n")
-        
-        n <- nrow(input)
-        input <- cov(scale(input))
-        twoLargestProd <- 1
-    } else
-    {
-        if(verbose) cat("The input is identified as the covariance matrix.\n")
-        
-        twoLargestProd <- prod(-sort(-diag(input), partial = 2)[1:2]) # In case data wasn't scaled
-    }
-
     pBanerjee <- p^2
     fraction <- qt(1-alpha/2/pBanerjee, df = n-2)/sqrt(n-2+qt(1-alpha/2/pBanerjee, df = n-2)^2)
 
     return(twoLargestProd*fraction)
 }
 
-# Bonferonni for gLASSO (not sure if done properly - problem with sigma i.e. twoLargestProd if data not scaled)
+# Holm for SLOPE (not sure if done properly - problem with sigma i.e. twoLargestProd if data not scaled)
 
-lambdaBonf <- function(input, n, alpha = 0.05, verbose = TRUE)
+lambdaHolm <- function(p, n, alpha = 0.05, twoLargestProd = 1)
 {
-    p <- ncol(input)
+    pHolm <- p*(p-1)/2
+    k <- 1:pHolm
+    fractionSeq <- qt(1-alpha*k/2/pHolm, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/pHolm, df = n-2)^2)
+    fractionSeq <- c(rep(fractionSeq[1], p), rep(fractionSeq, each=2))
     
-    if(!is.matrix(input))
-    {
-        p <- input[1]
-        twoLargestProd <- 1
-        
-    } else if(!isSymmetric(input))
-    {
-        if(verbose) cat("The input is identified as the data matrix.\n")
-        
-        input <- cov(scale(input))
-        twoLargestProd <- 1
-    } else
-    {
-        if(verbose) cat("The input is identified as the covariance matrix.\n")
-        
-        twoLargestProd <- prod(-sort(-diag(input), partial = 2)[1:2]) # In case data wasn't scaled
-    }
-    
+    return(twoLargestProd*fractionSeq)
+}
+
+
+# Bonferonni for gLASSO (not sure if done properly)
+
+lambdaBonf <- function(p, n, alpha = 0.05, twoLargestProd = 1)
+{
     qBonf <- qnorm(1-alpha/2/p)
     
     return(twoLargestProd*qBonf)
@@ -119,29 +102,8 @@ lambdaBonf <- function(input, n, alpha = 0.05, verbose = TRUE)
 
 # Banerjee SLOPE modification
 
-lambdaBS <- function(input, n, alpha = 0.05, verbose = TRUE)
+lambdaBS <- function(p, n, alpha = 0.05, twoLargestProd = 1)
 {
-    p <- ncol(input)
-    
-    if(!is.matrix(input))
-    {
-        p <- input[1]
-        twoLargestProd <- 1
-        
-    } else if(!isSymmetric(input))
-    {
-        if(verbose) cat("The input is identified as the data matrix.\n")
-        
-        n <- nrow(input)
-        input <- cov(scale(input))
-        twoLargestProd <- 1
-    } else
-    {
-        if(verbose) cat("The input is identified as the covariance matrix.\n")
-        
-        twoLargestProd <- prod(-sort(-diag(input), partial = 2)[1:2]) # In case data wasn't scaled
-    }
-    
     pBS <- p*(p-1)/2
     k <- 1:pBS
     fractionSeq <- qt(1-alpha*k/2/pBS, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/pBS, df = n-2)^2)
@@ -152,12 +114,26 @@ lambdaBS <- function(input, n, alpha = 0.05, verbose = TRUE)
 
 # BH for SLOPE (not sure if done properly - problem with sigma i.e. twoLargestProd if data not scaled)
 
-lambdaBH <- function(input, n, alpha = 0.05, verbose = TRUE)
+lambdaBH <- function(p, n, alpha = 0.05, twoLargestProd = 1)
+{
+    pBH <- p*(p-1)/2
+    k <- 1:pBH
+    fractionSeq <- qt(1-alpha*k/2/pBH, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/pBH, df = n-2)^2)
+    fractionSeq <- c(rep(fractionSeq[1], p), rep(fractionSeq, each=2))
+    
+    return(twoLargestProd*fractionSeq)
+}
+
+# Lambda selector for diffrent types of procedures
+
+lambdaSelector <- function(input, n, alpha = 0.05, method = "banerjee", verbose = TRUE)
 {
     p <- ncol(input)
     
     if(!is.matrix(input))
     {
+        if(verbose) cat("The input is identified as a dimension.\n")
+        
         p <- input[1]
         twoLargestProd <- 1
         
@@ -165,6 +141,7 @@ lambdaBH <- function(input, n, alpha = 0.05, verbose = TRUE)
     {
         if(verbose) cat("The input is identified as the data matrix.\n")
         
+        n <- nrow(input)
         input <- cov(scale(input))
         twoLargestProd <- 1
     } else
@@ -174,24 +151,16 @@ lambdaBH <- function(input, n, alpha = 0.05, verbose = TRUE)
         twoLargestProd <- prod(-sort(-diag(input), partial = 2)[1:2]) # In case data wasn't scaled
     }
     
-    pBH <- p*(p-1)/2
-    k <- 1:pBH
-    fractionSeq <- qnorm(1-alpha*k/2/pBH)
-    fractionSeq <- c(rep(fractionSeq[1], p), rep(fractionSeq, each=2))
-    
-    return(twoLargestProd*fractionSeq)
-}
-
-lambdaSelector <- function(input, n, alpha = 0.05, method = "banerjee", verbose = TRUE)
-{
     out = switch(method,
-                 banerjee = lambdaBanerjee(input, n, alpha, verbose),
-                 bonf = lambdaBonf(input, n, alpha, verbose),
-                 BS = lambdaBS(input, n, alpha, verbose),
-                 BH = lambdaBH(input, n, alpha, verbose))
-                 
+                 banerjee = lambdaBanerjee(input, n, alpha, twoLargestProd),
+                 BS = lambdaBS(p, n, alpha, twoLargestProd),
+                 BH = lambdaBH(p, n, alpha, twoLargestProd),
+                 holm = lambdaHolm(p, n, alpha, twoLargestProd))
+    
     return(out)
 }
+
+# TODO
 
 localFDR <- function(matrix, 
                      res)
@@ -201,6 +170,8 @@ localFDR <- function(matrix,
 	
 		sapply(1:p, function(i) sum(matrix[,i]==0 & res[,i]!=0)/max(1, sum(res[,i]!=0)-1))
 }
+
+# Data simulator based on SNR concept
 
 dataSimulator <- function(n = 100, 
                           SNR = 1, 

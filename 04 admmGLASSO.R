@@ -1,13 +1,20 @@
 # Written by Micha³ Makowski
 
+# TODO
+# Checks
+# Lamda default value
+
 source("02 softThresholding.R")
 
-# C - sample covariance
+# sampleCovariance - sample covariance
 # mu - Augmented Lagrangian parameter
 # lambda - Regularization parameter controlling sparsity
+# alpha - if lambda is NULL, then alpha is used for sequence construction
 # maxIter - maximum number of iterations
 # absoluteEpsilon - used in residual stopping criterium
 # truncate - should entries below absoluteEpsilon be equal to zero?
+# verbose - console output
+
 glassoADMM <- function(sampleCovariance, 
                        mu = 1, 
                        lambda = 1,
@@ -18,6 +25,8 @@ glassoADMM <- function(sampleCovariance,
                        truncate = TRUE,
                        verbose = TRUE)
 {
+    # Console output
+    
     if(verbose) 
     {
         cat("Starting ADMM gLASSO procedure...")
@@ -26,6 +35,7 @@ glassoADMM <- function(sampleCovariance,
     }
     
     # Checks
+    
     if(!is.matrix(lambda) & length(lambda)!=1 & length(lambda)!=nrow(sampleCovariance))
     {
         stop("Wrong number of elements in lambda")
@@ -39,12 +49,18 @@ glassoADMM <- function(sampleCovariance,
         }
     }
     
-    lambda <- round(lambda, round(log10( (1/absoluteEpsilon))))
+    # Lambda preparation
+    
+    lambda <- round(lambda, round(log10((1/absoluteEpsilon))))
+    
+    # Initialization
     
     Z <- sampleCovariance*0 # Initialize Lagragian to be nothing (seems to work well)
     Y <- Z 
     X <- diag(nrow = nrow(sampleCovariance), ncol = ncol(sampleCovariance))
 
+    # ADMM algorithm
+    
     for(n in 1:maxIter)
     {
         # Solve sub-problem to solve X
@@ -75,9 +91,6 @@ glassoADMM <- function(sampleCovariance,
         
         if(primalResidual < primalEpsilon & dualResidual < dualEpsilon) 
             break
-        
-        # if(n %% 10000 == 0)
-        #     print(paste(n, "iterations done..."), quote = F)
     }
     
     if(truncate)

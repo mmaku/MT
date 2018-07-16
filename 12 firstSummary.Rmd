@@ -1,0 +1,87 @@
+---
+title: "Short gLASSO & gSLOPE summary"
+author: "Micha³ Makowski"
+date: "13 July 2018"
+output: 
+  pdf_document: 
+    highlight: tango
+    keep_tex: yes
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE)
+
+source("11 measures.R")
+
+
+```
+
+## Introduction
+
+This short document describe a little of my work around graphical models. I will not dive deeply into graphical models assuming that the reader is quite familiar with the concept of graphical models, convex optimization and ADMM algorithm. I will present my current finding and problems.
+
+In all next paragraphs the following notation is used:
+
+* $n$ is sample size,
+* $p$ is dimension of graph (i.e. maximal number of nodes, number of observed random variables),
+* $\lambda$ is regularizer (could be sequence),
+* $F_n(\alpha)$ is quantile function of t-student distribution,
+* $\sigma_i$ is the variance of $i$-th variable,
+
+## Implementation
+
+I currently implemented ADMM for gLASSO and gSLOPE. Although gLASSO with ADMM is working correctly, during preparation of this document I used gLASSO implementation from the __glasso__ package due to faster computation times. For a data simulation I use the __huge__ R package that contains the function for generating data from gaussian RMF, as well as a function for the precision matrix estimation. It contains some interesting methods of finding a proper graph structure based on _StARS_, _eBIC_ and _RIC_ ([link to  vignette](https://cran.r-project.org/web/packages/huge/vignettes/vignette.pdf)). I would like to compare those methods with our results, but that is not prepared yet.
+
+All my code is hosted on GitHub: https://github.com/mmaku/MT.
+
+## Lambdas
+
+I use 4 diffrent setups of regularizations parameters, 1 for gLASSO and 2 for gSLOPE.
+
+### gLASSO Banerjee
+
+First regularizer is based on Banerjee et al. work from 2008. The formula for $\lambda$ is given by
+$$
+
+\lambda^{Banerjee} := \max_{i<j}(\sigma_i, \sigma_j) \frac{F_{n-2}\large(1-\frac{\alpha}{2p^2}\large)}{\sqrt{n-2+F^2_{n-2}\large(1-\frac{\alpha}{2p^2}\large)}}.
+
+$$
+Notation as at the begining of the document.
+
+### gSLOPE Holm
+
+gSLOPE BH regularizer based on Piotr Sobczyk work is given by
+$$
+\begin{align*}
+
+m & := {p \choose 2} = \frac{p(p-1)}{2},\\
+
+\lambda^{BH}_k & :=  \frac{F_{n-2}\large(1-\frac{\alpha}{2(m+1-k)}\large)}{\sqrt{n-2+F^2_{n-2}\large(1-\frac{\alpha}{2(m+1-k)}\large)}},\\
+
+\lambda^{BH} & := \{\underbrace{\lambda^{BH}_1,...,\lambda^{BH}_1}_\text{p times},\lambda^{BH}_1,\lambda^{BH}_1,\lambda^{BH}_2,\lambda^{BH}_2...,\lambda^{BH}_m,\lambda^{BH}_m\}
+
+\end{align*}
+$$
+The consept of it was given to me by Piotr, it is also derived in one of his papers, I want to discuss it with him, but for now it seems to work. Data must be centered and scaled before calulating the covariance matrix.
+
+
+
+, he suggested to use it as sanity check (for given $\alpha$ the power of gSLOPE must be higher that gLASSO).
+
+
+
+The __huge__ package provides very convinient way of data generation - we could 
+
+
+```{r}
+measures <- function(n=150, 
+                     p=200, 
+                     graph="cluster",
+                     alpha = .1, 
+                     penalizeDiagonal = FALSE, 
+                     epsilon = 10e-4, 
+                     simulationsNumber = 1000,  # Numer of graphs simulated to calculated FDR
+                     verbose = TRUE)
+```
+

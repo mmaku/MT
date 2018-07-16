@@ -3,10 +3,12 @@
 # Comprasion of two diffrent implementation of soft thresholding function
 # first using indexing, second using pmax
 
-source("softThresholding.R")
 
 # install.packages("tictoc")
 require(tictoc)
+
+source("softThresholding.R")
+
 
 tic("total")
 tic("data generation")

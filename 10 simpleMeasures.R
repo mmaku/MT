@@ -1,59 +1,121 @@
 # Written by Micha³ Makowski
 
-# Contingency measures
+# Measures
+# H_0: x_ij == 0
+# H_1: x_ij != =
 
-FP <- function(estimatedMatrix, realMatrix)
+source("01 auxilaryFunctions.R")
+
+properAdjacent <- function(input)
 {
-    # H_0: x_ij == 0
-    FP <- sum(estimatedMatrix[realMatrix == 0] != 0)
+    output <- as.matrix(input != 0)
+    if(sum(diag(output)) == 0)
+        diag(output) <- TRUE
+    
+    return(output)
+}
+
+FP <- function(estimatedMatrix, 
+               adjacentMatrix,
+               partial = FALSE)
+{
+    if(partial)
+    {
+        estimatedMatrix <- upper(estimatedMatrix)
+        adjacentMatrix <- upper(adjacentMatrix)
+    }
+    
+    FP <- sum(estimatedMatrix[!adjacentMatrix] != 0)
 
     return(FP)
 }
 
-TP <- function(estimatedMatrix, realMatrix)
+TP <- function(estimatedMatrix, 
+               adjacentMatrix,
+               partial = FALSE)
 {
-    # H_0: x_ij == 0
-    TP <- sum(estimatedMatrix[realMatrix != 0] != 0)
+    if(partial)
+    {
+        estimatedMatrix <- upper(estimatedMatrix)
+        adjacentMatrix <- upper(adjacentMatrix)
+    }
+    
+    TP <- sum(estimatedMatrix[adjacentMatrix] != 0)
     
     return(TP)
 }
 
-FN <- function(estimatedMatrix, realMatrix)
+FN <- function(estimatedMatrix, 
+               adjacentMatrix,
+               partial = FALSE)
 {
-    # H_0: x_ij == 0
-    FN <- sum(estimatedMatrix[realMatrix != 0] == 0)
+    if(partial)
+    {
+        estimatedMatrix <- upper(estimatedMatrix)
+        adjacentMatrix <- upper(adjacentMatrix)
+    }
+    
+    FN <- sum(estimatedMatrix[adjacentMatrix] == 0)
     
     return(FN)
 }
 
-TN <- function(estimatedMatrix, realMatrix)
+TN <- function(estimatedMatrix, 
+               adjacentMatrix,
+               partial = FALSE)
 {
-    # H_0: x_ij == 0
-    TN <- sum(estimatedMatrix[realMatrix == 0] == 0)
+    if(partial)
+    {
+        estimatedMatrix <- upper(estimatedMatrix)
+        adjacentMatrix <- upper(adjacentMatrix)
+    }
+    
+    TN <- sum(estimatedMatrix[!adjacentMatrix] == 0)
     
     return(TN)
 }
 
-FDP <- function(estimatedMatrix, realMatrix)
+FDP <- function(estimatedMatrix, 
+                adjacentMatrix,
+                partial = FALSE)
 {
-    # H_0: x_ij == 0
+    if(partial)
+    {
+        estimatedMatrix <- upper(estimatedMatrix)
+        adjacentMatrix <- upper(adjacentMatrix)
+    }
+    
     predictedPositive <- max(c(sum(estimatedMatrix != 0), 1))
     
-    return(FP(estimatedMatrix, realMatrix)/predictedPositive)
+    return(FP(estimatedMatrix, adjacentMatrix)/predictedPositive)
 }
 
-SN <- function(estimatedMatrix, realMatrix)
+SN <- function(estimatedMatrix, 
+               adjacentMatrix,
+               partial = FALSE)
 {
-    # H_0: x_ij == 0
-    realPositive <- max(c(sum(realMatrix != 0), 1))
+    if(partial)
+    {
+        estimatedMatrix <- upper(estimatedMatrix)
+        adjacentMatrix <- upper(adjacentMatrix)
+    }
     
-    return(TP(estimatedMatrix, realMatrix)/realPositive)
+    realPositive <- max(c(sum(adjacentMatrix), 1))
+    
+    return(TP(estimatedMatrix, adjacentMatrix)/realPositive)
 }
 
-SP <- function(estimatedMatrix, realMatrix)
+SP <- function(estimatedMatrix, 
+               adjacentMatrix,
+               partial = FALSE)
 {
-    # H_0: x_ij == 0
-    realNegative <- max(c(sum(realMatrix == 0), 1))
+    if(partial)
+    {
+        estimatedMatrix <- upper(estimatedMatrix)
+        adjacentMatrix <- upper(adjacentMatrix)
+    }
     
-    return(TN(estimatedMatrix, realMatrix)/realNegative)
+    realNegative <- max(c(sum(!adjacentMatrix), 1))
+    
+    return(TN(estimatedMatrix, adjacentMatrix)/realNegative)
 }

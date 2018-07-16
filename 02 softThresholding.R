@@ -1,6 +1,6 @@
 # Written by Micha³ Makowski
 
-# Soft thresholding functions definitions
+# Soft thresholding functions
 
 softThresholding <- function(matrix,
                              threshold, 
