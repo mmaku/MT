@@ -73,7 +73,7 @@ simulations <- function(simulationMatrix,
         filename <- paste0("Simulation_", nrow(simulationMatrix), "_",
                            format(Sys.time(), '%y_%m_%d_%H_%M'))
         
-        save(output additionalMethods, file = paste0("./!02 Data/01 Binded/", filename, ".RData"))
+        save(output, additionalMethods, file = paste0("./!02 Data/01 Binded/", filename, ".RData"))
     }
     
     return(output)
