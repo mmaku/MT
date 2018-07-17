@@ -3,9 +3,8 @@
 # Comprasion of two diffrent implementation of soft thresholding function
 # first using indexing, second using pmax
 
-
 # install.packages("tictoc")
-require(tictoc)
+require(tictoc, quietly = TRUE)
 
 source("softThresholding.R")
 

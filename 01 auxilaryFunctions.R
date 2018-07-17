@@ -2,12 +2,12 @@
 
 
 # TODO
-# Penalize diagonal in lambdas functions
+# Lambdas
 
-require(ggplot2)
-require(reshape)
-require(MASS)
-require(latex2exp)
+require(ggplot2, quietly = TRUE)
+require(reshape, quietly = TRUE)
+require(MASS, quietly = TRUE)
+require(latex2exp, quietly = TRUE)
 
 # Simple upper triangle function
 

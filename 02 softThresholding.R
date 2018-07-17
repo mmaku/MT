@@ -6,14 +6,14 @@ softThresholding <- function(matrix,
                              threshold, 
                              penalizeDiagonal = TRUE)
 {
-    out <- matrix * 0
+    output <- matrix * 0
     
-    out[matrix >  threshold] <- matrix[matrix >  threshold]-threshold
-    out[matrix < -threshold] <- matrix[matrix < -threshold]+threshold
+    output[matrix >  threshold] <- matrix[matrix >  threshold]-threshold
+    output[matrix < -threshold] <- matrix[matrix < -threshold]+threshold
     
-    if(!penalizeDiagonal) diag(out) <- diag(matrix)
+    if(!penalizeDiagonal) diag(output) <- diag(matrix)
     
-    return(out)
+    return(output)
 }
 
 softThresholding2 <- function(matrix, 

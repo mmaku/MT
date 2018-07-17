@@ -34,7 +34,9 @@ measures <- function(n = 150,
         setTxtProgressBar(progressBar, 0)
     }
 
-    methods <- c("gLASSO", "BSgSLOPE", "BHgSLOPE", names(additionalMethods))
+    methods <- c("gLASSO", 
+                 # "BSgSLOPE", 
+                 "BHgSLOPE", names(additionalMethods))
     zeros <- rep_len(0, length(methods))
     results <- data.frame(FDR = zeros, SN = zeros, SP = zeros, row.names = methods)
    
@@ -42,7 +44,7 @@ measures <- function(n = 150,
     banerjeeLambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "banerjee", verbose = FALSE)
         
     # gSLOPE parameters
-    BSlambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "BS", verbose = FALSE) 
+    # BSlambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "BS", verbose = FALSE) 
     BHlambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "BH", verbose = FALSE) 
     
     for(i in 1:iterations)
@@ -56,12 +58,12 @@ measures <- function(n = 150,
             {
                 omegaHat <- glasso(s = generatedData$sigmahat, rho = banerjeeLambda, thr = epsilon,
                                    penalize.diagonal = penalizeDiagonal)$wi    
-            } else if(m == "BSgSLOPE")
-            {
-                omegaHat <- gslopeADMM(sampleCovariance = generatedData$sigmahat, lambda = BSlambda,
-                                       penalizeDiagonal = penalizeDiagonal, 
-                                       truncate = TRUE, absoluteEpsilon = epsilon, 
-                                       verbose = FALSE)$precisionMatrix
+            # } else if(m == "BSgSLOPE")
+            # {
+            #     omegaHat <- gslopeADMM(sampleCovariance = generatedData$sigmahat, lambda = BSlambda,
+            #                            penalizeDiagonal = penalizeDiagonal, 
+            #                            truncate = TRUE, absoluteEpsilon = epsilon, 
+            #                            verbose = FALSE)$precisionMatrix
             } else if(m == "BHgSLOPE")
             {
                 omegaHat <- gslopeADMM(sampleCovariance = generatedData$sigmahat, lambda = BHlambda,
