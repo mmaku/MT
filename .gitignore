@@ -8,4 +8,4 @@
 
 # Other 
 !stupidThings.R
-.RData
+*.RData
