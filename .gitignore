@@ -7,5 +7,6 @@
 .Rproj.user
 
 # Other 
-!stupidThings.R
+\!stupidThings1.R
+\!stupidThings2.R
 *.RData
