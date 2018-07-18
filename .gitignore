@@ -1,12 +1,15 @@
+!.gitignore
+
+Folders
+\!01 Plots/
+\!02 Data/
+.Rproj.user/
+
 # Plots
 *.png
 *.jpeg
 
-# User files
-.Rproj.user/
-.Rproj.user
 
 # Other 
-\!stupidThings1.R
-\!stupidThings2.R
+\!stupidThings[0-9].R
 *.RData
