@@ -205,7 +205,6 @@ dataSimulator <- function(n = 100,
 
 plotFour <- function(benchResult)
 {
-    benchResult <- X
     properData <- rbind(meltingMatrix((benchResult[[1]]$matrix > 0), benchResult[[1]]$name),
                         meltingMatrix((benchResult[[2]]$matrix > 0), benchResult[[2]]$name),
                         meltingMatrix((benchResult[[3]]$matrix > 0), benchResult[[3]]$name),

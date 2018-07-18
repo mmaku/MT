@@ -77,7 +77,7 @@ gslopeADMM <- function(sampleCovariance,
     {
         # Solve sub-problem to solve X
         Ctilde <- Y-Z-sampleCovariance/mu
-        Ceigen <- eigen(Ctilde)
+        Ceigen <- eigen(Ctilde, symmetric = TRUE)
         CeigenVal <- Ceigen$val
         CeigenVec <- Ceigen$vec
         Fmu <- 1/2*diag(CeigenVal+sqrt(CeigenVal*CeigenVal+4/mu))

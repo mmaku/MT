@@ -119,3 +119,37 @@ SP <- function(estimatedMatrix,
     
     return(TN(estimatedMatrix, adjacentMatrix)/realNegative)
 }
+
+plotDiffrence <- function(estimatedMatrix, adjacentMatrix, method = "graph", graphType = NULL, n = NULL, p = NULL, alpha = NULL)
+{
+    properEstimated <- properAdjacent(estimatedMatrix)   
+    properAdjacent <- properAdjacent(adjacentMatrix)   
+    
+    errorMatrix <- 1*(!properAdjacent & properEstimated) + # FP
+        2*(properAdjacent & properEstimated) +             # TP
+        3*(properAdjacent & !properEstimated) +            # FN
+        4*(!properAdjacent & !properEstimated)             # TN
+    
+    properData <- meltingMatrix(errorMatrix, 
+                                # NULL)
+                                "Status")
+    
+    colnames(properData) <- c("X1", "X2", colnames(properData)[3:4])
+    properData$value <- c("FP", "TP", "FN", "TN")[properData$value]
+    
+    x <- as.factor(properData$value)
+     
+    levels(x) <- c("FP", "TP", "FN", "TN")
+    
+    mainTitle <- paste0("Difference beetwen real & estimated matrix for ", method)
+    subTitle <- paste0('graphType = ', graphType, ', n = ', n, ', p = ', p, ', alpha = ', alpha)
+    
+    out <- ggplot(properData, aes(x=X1, y=X2)) + 
+        geom_tile(aes(fill = factor(value))) +
+        labs(title =  mainTitle, subtitle = subTitle, x = TeX('$X_1$'), y = TeX('$X_2$')) +
+        labs(fill = "Matrix\nestimator") +
+        # scale_y_discrete() +
+        theme_minimal()
+
+    return(out)
+}
