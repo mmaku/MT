@@ -38,25 +38,38 @@ gslopeADMM <- function(sampleCovariance,
         setTxtProgressBar(progressBar, 0)
     }    
     
+    p <- ncol(sampleCovariance)
+    
     # Sequence length
     
-    entriesNumber <- sum(1:(ncol(sampleCovariance)-!penalizeDiagonal))
+    entriesNumber <- sum(1:(p-!penalizeDiagonal))
     
     # Lambda preparation
     
     lambda <- sort(lambda, decreasing = T)
-        
-    if(length(lambda) < entriesNumber) 
-        lambda <- c(lambda, rep(0, times = entriesNumber - length(lambda)))
-        
-    if(length(lambda) > entriesNumber) 
-        lambda <- lambda[1:entriesNumber]   
 
+    if(length(lambda) == p^2)
+    {
+        if(penalizeDiagonal)
+        {
+            lambda <- c(lambda[1:p], lambda[seq(from = p+1, to = length(lambda), by = 2)])
+        } else
+        {
+            lambda <- lambda[seq(from = p+1, to = length(lambda), by = 2)]
+        }
+    } else if(length(lambda) < entriesNumber) 
+    {
+        lambda <- c(lambda, rep(0, times = entriesNumber - length(lambda)))
+    } else if(length(lambda) > entriesNumber) 
+    {
+        lambda <- lambda[1:entriesNumber]   
+    }
+        
     # Initialization
     
     Z <- sampleCovariance*0 # Initialize Lagragian to be nothing (seems to work well)
     Y <- Z 
-    X <- diag(nrow = nrow(sampleCovariance))
+    X <- diag(nrow = p)
 
     # ADMM algotithm
     

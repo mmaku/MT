@@ -23,20 +23,17 @@ benchOne <- function(data,
                      mu = 1, 
                      selectCriterion = "stars")
 {
-    sampleCovariance <- cov(data)
+    sampleCovariance <- cov(scale(data))
     
     n     <- nrow(data)
     p     <- ncol(data)
-    m     <- p*(p-1)/2
-    mBanerjee <- p^2   
-    banerjeeLassoLambda <- qt(1-alpha/2/mBanerjee, df = n-2)/sqrt(n-2+qt(1-alpha/2/mBanerjee, df = n-2)^2)
+    
+    banerjeeLassoLambda <- lambdaSelector(p, n, alpha, "banerjee", verbose = FALSE)
     # gLASSO
     gLassoADMM <- glassoADMM(sampleCovariance, mu = mu, lambda = banerjeeLassoLambda, 
                              penalizeDiagonal = penalizeDiagonal, truncate = truncate, absoluteEpsilon = epsilon)
     
-    k = 1:m
-    BHlambda <- qt(1-alpha*k/2/m, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/m, df = n-2)^2)
-    BHSlopeLambda <- c(rep(BHlambda[1], p), rep(BHlambda, each=2))
+    BHSlopeLambda <- banerjeeLassoLambda <- lambdaSelector(p, n, alpha, "BH", verbose = FALSE)
     # gSLOPE
     gSlopeADMM <- gslopeADMM(sampleCovariance, mu = mu, lambda = BHSlopeLambda, 
                              penalizeDiagonal = penalizeDiagonal, truncate = truncate, absoluteEpsilon = epsilon)
@@ -68,20 +65,7 @@ benchOne <- function(data,
                 selectMethod = selectCriterion))
 }
 
-meltingMatrix <- function(matrix, 
-                          index = NULL)
-{
-    colnames(matrix) <- 1:ncol(matrix)
-    rownames(matrix) <- 1:ncol(matrix)
-    
-    matrix <- reshape2::melt(matrix)
-    
-    if(!is.null(index))
-        matrix <- cbind(matrix, index)
-    
-    return(matrix)
-}
-    
+
 plotBenchOne <- function(benchResult)
 {
     properData <- rbind(meltingMatrix(benchResult[[1]]$precisionMatrix, "gLASSO"),
@@ -121,5 +105,29 @@ plotBenchOne <- function(benchResult)
         theme_minimal() +
         theme(legend.spacing.y = unit(-0.3, "cm"))
 
+    return(out)
+}
+
+
+plotFour <- function(benchResult)
+{
+    benchResult <- X
+    properData <- rbind(meltingMatrix((benchResult[[1]]$matrix > 0), benchResult[[1]]$name),
+                        meltingMatrix((benchResult[[2]]$matrix > 0), benchResult[[2]]$name),
+                        meltingMatrix((benchResult[[3]]$matrix > 0), benchResult[[3]]$name),
+                        meltingMatrix((benchResult[[4]]$matrix > 0), benchResult[[4]]$name))
+    
+    colnames(properData) <- c("X1", "X2", colnames(properData)[3:4])
+    properData$value <- c("0", "1")[1+properData$value]
+    
+    mainTitle <- paste0("Comparision of different precision matrix estimation methods")
+    
+    out <- ggplot(properData, aes(x=X1, y=X2)) + 
+        geom_tile(aes(fill = factor(value))) +
+        labs(title =  mainTitle, x = TeX('$X_1$'), y = TeX('$X_2$')) +
+        facet_wrap(~index) +
+        scale_fill_manual(values = c("lightblue", "darkblue")) +
+        theme_minimal()
+    out
     return(out)
 }

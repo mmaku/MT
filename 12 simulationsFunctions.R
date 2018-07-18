@@ -34,19 +34,25 @@ simulations <- function(simulationMatrix,
     
     if(verbose) 
     {
-        cat("Starting simulations\nnumber of setups = ", nrow(simulationMatrix), ".\n")
+        cat("Starting simulations\nnumber of setups = ", nrow(simulationMatrix), 
+            "\nnumber of simulations = ", sum(simulationMatrix$iterations), ".\n")
         
-        progressBar <- txtProgressBar(min = 0, max = nrow(simulationMatrix), style = 3)
+        progressBar <- txtProgressBar(min = 0, max = sum(simulationMatrix$iterations), style = 3)
         setTxtProgressBar(progressBar, 0)
+    }
+    if(saveAll)
+    {
+        filenameAll <- paste0("Simulation_", nrow(simulationMatrix), "_",
+                              format(Sys.time(), '%y_%m_%d_%H_%M'))
     }
     
     output <- list()
-        
-    for(r in 1:nrow(simulationMatrix)) 
+    
+    for(r in seq_len(nrow(simulationMatrix))) 
     {
         simResults <- specificDoCall(simulationMatrix[r,])
         
-        output[[r]] <- cbind(simResults, simulationMatrix[r,])
+        output[[r]] <- cbind(simResults, simulationMatrix[r,], row.names = NULL)
         
         if(saveEach)
         {
@@ -58,9 +64,15 @@ simulations <- function(simulationMatrix,
             
             save(simResults, setup, additionalMethods, file = paste0("./!02 Data/", filename, ".RData"))
         }
-
+        if(saveAll)
+        {
+            tempOutput <- do.call("rbind", output)
+            save(tempOutput, additionalMethods, 
+                 file = paste0("./!02 Data/01 Binded/", filenameAll, ".RData"))
+        }
+        
         if(verbose)
-            setTxtProgressBar(progressBar, r)
+            setTxtProgressBar(progressBar, sum(simulationMatrix$iterations[1:r]))
     }
     
     if(verbose)
@@ -70,10 +82,8 @@ simulations <- function(simulationMatrix,
     
     if(saveAll)
     {
-        filename <- paste0("Simulation_", nrow(simulationMatrix), "_",
-                           format(Sys.time(), '%y_%m_%d_%H_%M'))
-        
-        save(output, additionalMethods, file = paste0("./!02 Data/01 Binded/", filename, ".RData"))
+        save(output, additionalMethods, 
+             file = paste0("./!02 Data/01 Binded/", filenameAll, ".RData"))
     }
     
     return(output)

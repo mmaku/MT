@@ -9,6 +9,23 @@ require(reshape, quietly = TRUE)
 require(MASS, quietly = TRUE)
 require(latex2exp, quietly = TRUE)
 
+
+meltingMatrix <- function(matrix, 
+                          index = NULL)
+{
+    colnames(matrix) <- 1:ncol(matrix)
+    rownames(matrix) <- 1:ncol(matrix)
+    
+    matrix <- reshape2::melt(matrix)
+    
+    if(!is.null(index))
+        matrix <- cbind(matrix, index)
+    
+    return(matrix)
+}
+
+
+
 # Simple upper triangle function
 
 upper <- function(input, diagonal = FALSE)
@@ -84,31 +101,9 @@ lambdaHolm <- function(p, n, alpha = 0.05, twoLargestProd = 1)
 {
     pHolm <- p*(p-1)/2
     k <- 1:pHolm
-    fractionSeq <- qt(1-alpha*k/2/pHolm, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/pHolm, df = n-2)^2)
+    fractionSeq <- qt(1-alpha/2/(pHolm+1-k), df = n-2)/sqrt(n-2+qt(1-alpha/2/(pHolm+1-k), df = n-2)^2)
     fractionSeq <- c(rep(fractionSeq[1], p), rep(fractionSeq, each=2))
-    
-    return(twoLargestProd*fractionSeq)
-}
 
-
-# Bonferonni for gLASSO (not sure if done properly)
-
-lambdaBonf <- function(p, n, alpha = 0.05, twoLargestProd = 1)
-{
-    qBonf <- qnorm(1-alpha/2/p)
-    
-    return(twoLargestProd*qBonf)
-}
-
-# Banerjee SLOPE modification
-
-lambdaBS <- function(p, n, alpha = 0.05, twoLargestProd = 1)
-{
-    pBS <- p*(p-1)/2
-    k <- 1:pBS
-    fractionSeq <- qt(1-alpha*k/2/pBS, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/pBS, df = n-2)^2)
-    fractionSeq <- c(rep(fractionSeq[1], p), rep(fractionSeq, each=2))
-    
     return(twoLargestProd*fractionSeq)
 }
 
@@ -152,8 +147,7 @@ lambdaSelector <- function(input, n, alpha = 0.05, method = "banerjee", verbose 
     }
     
     out = switch(method,
-                 banerjee = lambdaBanerjee(input, n, alpha, twoLargestProd),
-                 BS = lambdaBS(p, n, alpha, twoLargestProd),
+                 banerjee = lambdaBanerjee(p, n, alpha, twoLargestProd),
                  BH = lambdaBH(p, n, alpha, twoLargestProd),
                  holm = lambdaHolm(p, n, alpha, twoLargestProd))
     
@@ -206,4 +200,28 @@ dataSimulator <- function(n = 100,
                 factors = factors, 
                 dims = dims, 
                 s = s))
+}
+
+
+plotFour <- function(benchResult)
+{
+    benchResult <- X
+    properData <- rbind(meltingMatrix((benchResult[[1]]$matrix > 0), benchResult[[1]]$name),
+                        meltingMatrix((benchResult[[2]]$matrix > 0), benchResult[[2]]$name),
+                        meltingMatrix((benchResult[[3]]$matrix > 0), benchResult[[3]]$name),
+                        meltingMatrix((benchResult[[4]]$matrix > 0), benchResult[[4]]$name))
+    
+    colnames(properData) <- c("X1", "X2", colnames(properData)[3:4])
+    properData$value <- c("0", "1")[1+properData$value]
+    
+    mainTitle <- paste0("Comparision of different precision matrix estimation methods")
+    
+    out <- ggplot(properData, aes(x=X1, y=X2)) + 
+        geom_tile(aes(fill = factor(value))) +
+        labs(title =  mainTitle, x = TeX('$X_1$'), y = TeX('$X_2$')) +
+        facet_wrap(~index) +
+        scale_fill_manual(values = c("lightblue", "darkblue")) +
+        theme_minimal()
+    out
+    return(out)
 }
