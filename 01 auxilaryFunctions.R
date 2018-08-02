@@ -125,31 +125,37 @@ lambdaSelector <- function(input, n, alpha = 0.05, method = "banerjee", verbose 
 {
     p <- ncol(input)
     
-    if(!is.matrix(input))
+    if(alpha != 0)
     {
-        if(verbose) cat("The input is identified as a dimension.\n")
+        if(!is.matrix(input))
+        {
+            if(verbose) cat("The input is identified as a dimension.\n")
+            
+            p <- input[1]
+            twoLargestProd <- 1
+            
+        } else if(!isSymmetric(input))
+        {
+            if(verbose) cat("The input is identified as the data matrix.\n")
+            
+            n <- nrow(input)
+            input <- cov(scale(input))
+            twoLargestProd <- 1
+        } else
+        {
+            if(verbose) cat("The input is identified as the covariance matrix.\n")
+            
+            twoLargestProd <- prod(-sort(-diag(input), partial = 2)[1:2]) # In case data wasn't scaled
+        }
         
-        p <- input[1]
-        twoLargestProd <- 1
-        
-    } else if(!isSymmetric(input))
-    {
-        if(verbose) cat("The input is identified as the data matrix.\n")
-        
-        n <- nrow(input)
-        input <- cov(scale(input))
-        twoLargestProd <- 1
+        out <- switch(method,
+                     banerjee = lambdaBanerjee(p, n, alpha, twoLargestProd),
+                     BH = lambdaBH(p, n, alpha, twoLargestProd),
+                     holm = lambdaHolm(p, n, alpha, twoLargestProd))
     } else
     {
-        if(verbose) cat("The input is identified as the covariance matrix.\n")
-        
-        twoLargestProd <- prod(-sort(-diag(input), partial = 2)[1:2]) # In case data wasn't scaled
+        out <- 0
     }
-    
-    out = switch(method,
-                 banerjee = lambdaBanerjee(p, n, alpha, twoLargestProd),
-                 BH = lambdaBH(p, n, alpha, twoLargestProd),
-                 holm = lambdaHolm(p, n, alpha, twoLargestProd))
     
     return(out)
 }

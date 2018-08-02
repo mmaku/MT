@@ -34,7 +34,7 @@ simulations <- function(simulationMatrix,
     
     if(verbose) 
     {
-        cat("Starting simulations\nnumber of setups = ", nrow(simulationMatrix), 
+        cat("Starting simulations\nnumber of setups = ", NROW(simulationMatrix), 
             "\nnumber of simulations = ", sum(simulationMatrix$iterations), ".\n")
         
         progressBar <- txtProgressBar(min = 0, max = sum(simulationMatrix$iterations), style = 3)
@@ -42,13 +42,13 @@ simulations <- function(simulationMatrix,
     }
     if(saveAll)
     {
-        filenameAll <- paste0("Simulation_", nrow(simulationMatrix), "_",
-                              format(Sys.time(), '%y_%m_%d_%H_%M'))
+        filenameAll <- paste0("Simulation@", format(Sys.time(), '%y_%m_%d@%H_%M'), "#",
+                              NROW(simulationMatrix)*(3+NROW(additionalMethods)))
     }
     
     output <- list()
     
-    for(r in seq_len(nrow(simulationMatrix))) 
+    for(r in seq_len(NROW(simulationMatrix))) 
     {
         simResults <- specificDoCall(simulationMatrix[r,])
         

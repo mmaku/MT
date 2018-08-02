@@ -13,4 +13,5 @@ Folders
 # Other 
 \!stupidThings[0-9].R
 *.RData
+*.html
 .Rproj.user

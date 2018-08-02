@@ -51,7 +51,7 @@ measures <- function(n = 150,
     
     for(i in seq_len(iterations))
     {
-        generatedData <- huge.generator(n, d = p, graph = graphType, verbose = FALSE) 
+        generatedData <- huge.generator(n = n, d = p, graph = graphType, verbose = FALSE) 
         adjacent <- properAdjacent(generatedData$theta)
         
         proc <- 1

@@ -23,7 +23,7 @@ require(kableExtra, quietly = TRUE)
 
 load("../!02 Data/01 Binded/Simulation_10_18_07_18_12_27.RData")
 output %>%
-    # filter((procedure == "gLASSO" & alpha > 0.04) | (procedure == "BHgSLOPE" & alpha < 0.04)) %>%
+    filter((procedure == "gLASSO" & alpha > 0.04) | (procedure == "BHgSLOPE" & alpha < 0.04)) %>%
     select(-penalizeDiagonal, -partial, -iterations, -SP) %>%
     rename(Power = SN) %>%
     mutate_if(is.numeric, funs(round), 4) %>%
