@@ -11,9 +11,9 @@ require(ggplot2)
 require(latex2exp)
 require(reshape2)
 
-source("01 auxilaryFunctions.R")
-source("04 admmGLASSO.R")
-source("07 admmGSLOPE.R")
+source("auxilaryFunctions.R")
+source("admmGLASSO.R")
+source("admmGSLOPE.R")
 
 benchOne <- function(data, 
                      alpha = .05, 
@@ -80,8 +80,6 @@ plotBenchOne <- function(benchResult)
     subTitle <- paste0('alpha = ', benchResult$alpha, 
                         ', diagonal penalization: ', c('No', 'Yes')[1+benchResult$diagonalPenalization],
                         ', values below ', benchResult$epsilon, ' truncated: ', c('No.', 'Yes.')[1+benchResult$truncated])
-    
-    properData
     
     out <- ggplot(properData, aes(x=X1, y=X2))
     

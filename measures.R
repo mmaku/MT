@@ -8,18 +8,16 @@ require(glasso, quietly = TRUE)  # graphical lasso
 require(huge, quietly = TRUE)    # graphical models
 require(R.utils, quietly = TRUE) # doCall
 
-source("01 auxilaryFunctions.R")
-source("07 admmGSLOPE.R")
-source("10 simpleMeasures.R")
-
+source("auxilaryFunctions.R")
+source("admmGSLOPE.R")
+source("errorTypes.R")
 
 
 measures <- function(n = 150, 
                      p = 200, 
                      graphType = "cluster",
-                     alpha = 0.1, 
+                     alpha = 0.05, 
                      penalizeDiagonal = FALSE, 
-                     partialMeasure = TRUE,
                      additionalMethods = NULL,
                      iterations = 250,  # Numer of graphs simulated to calculated FDR
                      epsilon = 10e-4, 
@@ -27,10 +25,9 @@ measures <- function(n = 150,
 {
     if(verbose) 
     {
-        cat("Starting FDR, Sensitivity & Specificity simulations\nn = ", 
+        cat("Starting FDR, localFDR, Sensitivity & Specificity simulations\nn = ", 
             n, "\np = ", p, "\ngraph structure = ", graphType, 
-            "\nsimulations number = ", iterations, 
-            "\nmeasures calculated on whole matrix = ", c("Yes.\n", "No.\n")[1+partialMeasure])
+            "\nsimulations number = ", iterations)
         
         progressBar <- txtProgressBar(min = 0, max = iterations, style = 3)
         setTxtProgressBar(progressBar, 0)
@@ -40,7 +37,7 @@ measures <- function(n = 150,
                  "holmgSLOPE",
                  "BHgSLOPE", names(additionalMethods))
     zeros <- rep_len(0, length(methods))
-    results <- data.frame(procedure = methods, FDR = zeros, SN = zeros, SP = zeros)
+    results <- data.frame(procedure = methods, FDR = zeros, localFDR = zeros, SN = zeros, SP = zeros)
     
     # gLASSO parameters
     banerjeeLambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "banerjee", verbose = FALSE)
@@ -66,13 +63,13 @@ measures <- function(n = 150,
             {
                 omegaHat <- gslopeADMM(sampleCovariance = generatedData$sigmahat, lambda = holmlambda,
                                        penalizeDiagonal = penalizeDiagonal,
-                                       truncate = TRUE, absoluteEpsilon = epsilon,
+                                       absoluteEpsilon = epsilon,
                                        verbose = FALSE)$precisionMatrix
             } else if(m == "BHgSLOPE")
             {
                 omegaHat <- gslopeADMM(sampleCovariance = generatedData$sigmahat, lambda = BHlambda,
                                        penalizeDiagonal = penalizeDiagonal, 
-                                       truncate = TRUE, absoluteEpsilon = epsilon, 
+                                       absoluteEpsilon = epsilon, 
                                        verbose = FALSE)$precisionMatrix
             } else
             {
@@ -85,9 +82,10 @@ measures <- function(n = 150,
                 omegaHat <- properAdjacent(omegaHat)   
             }
         
-            results[proc,"FDR"] <- results[proc,"FDR"] + FDP(omegaHat, adjacent, partialMeasure)
-            results[proc, "SN"] <- results[proc,"SN"] + SN(omegaHat, adjacent, partialMeasure)
-            results[proc, "SP"] <- results[proc,"SP"] + SP(omegaHat, adjacent, partialMeasure)
+            results[proc,"FDR"] <- results[proc,"FDR"] + FDP(omegaHat, adjacent)
+            results[proc,"localFDR"] <- results[proc,"localFDR"] + localFDP(omegaHat, adjacent)
+            results[proc, "SN"] <- results[proc,"SN"] + SN(omegaHat, adjacent)
+            results[proc, "SP"] <- results[proc,"SP"] + SP(omegaHat, adjacent)
             
             proc = proc + 1
         }

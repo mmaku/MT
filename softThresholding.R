@@ -1,7 +1,6 @@
 # Written by Micha³ Makowski
 
-# Soft thresholding functions
-
+# Soft thresholding function
 softThresholding <- function(matrix,
                              threshold, 
                              penalizeDiagonal = TRUE)
@@ -14,10 +13,4 @@ softThresholding <- function(matrix,
     if(!penalizeDiagonal) diag(output) <- diag(matrix)
     
     return(output)
-}
-
-softThresholding2 <- function(matrix, 
-                              threshold)
-{
-    return(pmax(matrix-threshold, 0) - pmax(-matrix-threshold, 0))
 }

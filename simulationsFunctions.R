@@ -6,19 +6,18 @@
 require(glasso)
 require(huge)
 
-source("11 measures.R")
+source("measures.R")
 
 createSimulationMatrix <- function(nVec = 150, 
                                    pVec = 200, 
                                    graphTypeVec = "cluster",
-                                   alphaVec = 0.1, 
+                                   alphaVec = 0.05, 
                                    penalizeDiagonalVec = FALSE, 
-                                   partialVec = TRUE,
                                    iterationsVec = 1000)
 {
-    output <- expand.grid(nVec, pVec, graphTypeVec, alphaVec, penalizeDiagonalVec, partialVec, iterationsVec,
+    output <- expand.grid(nVec, pVec, graphTypeVec, alphaVec, penalizeDiagonalVec, iterationsVec,
                           KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
-    colnames(output) <- c("n", "p", "graphType", "alpha", "penalizeDiagonal", "partial", "iterations")
+    colnames(output) <- c("n", "p", "graphType", "alpha", "penalizeDiagonal", "iterations")
     
     return(output)
 }

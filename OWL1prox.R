@@ -13,7 +13,7 @@ OWL1fastprox <- function(entries,
 
 matrixOWL1prox <- function(matrix, 
                            lambdaSeries, #must be sorted!
-                           penalizeDiagonal = TRUE)
+                           penalizeDiagonal = FALSE)
 {
     out <- matrix
     

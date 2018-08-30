@@ -1,123 +1,72 @@
 # Written by Micha³ Makowski
 
-# Measures
-# H_0: x_ij == 0
-# H_1: x_ij != =
+# Plotting functions
 
-source("01 auxilaryFunctions.R")
-
-properAdjacent <- function(input)
+# Covariance matrix plot
+plotCovarianceStructure <- function(covarianceMatrix)
 {
-    output <- as.matrix(input != 0)
-    if(sum(diag(output)) == 0)
-        diag(output) <- TRUE
+    colnames(covarianceMatrix) <- 1:ncol(covarianceMatrix)
+    rownames(covarianceMatrix) <- 1:ncol(covarianceMatrix)
+    df1 <- melt(covarianceMatrix)
+    df1$value <- as.factor(df1$value)
     
-    return(output)
+    covPlot <- ggplot(df1, aes(x=X1, y=X2)) + geom_tile(aes(fill=value)) +
+        theme(axis.ticks = element_blank(), 
+              axis.text.x = element_text(angle = 330, hjust = 0, vjust = 1, colour = "grey50"),
+              axis.text.y = element_text(colour = "grey50"),
+              panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
+              panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+              panel.background = element_rect(fill = "white", colour = "white"))
+    
+    return(covPlot)
 }
 
-FP <- function(estimatedMatrix, 
-               adjacentMatrix,
-               partial = FALSE)
-{
-    if(partial)
-    {
-        estimatedMatrix <- upper(estimatedMatrix)
-        adjacentMatrix <- upper(adjacentMatrix)
-    }
-    
-    FP <- sum((estimatedMatrix != 0) & !adjacentMatrix)
 
-    return(FP)
+plotMatrix <- function(matrix, 
+                       title = NULL)
+{
+    colnames(matrix) <- 1:ncol(matrix)
+    rownames(matrix) <- 1:ncol(matrix)
+    properData <- melt(matrix)
+    
+    colnames(properData) <- c("X1", "X2", "value")
+    
+    matrixPlot <- ggplot(properData, aes(x=X1, y=X2)) + 
+        geom_tile(data = subset(properData, !is.zero(value)), aes(fill = value)) +
+        geom_tile(data = subset(properData,  is.zero(value)), aes(colour = "0"), 
+                  linetype = 0, fill = "grey50", alpha = .5) +
+        labs(title = title, x = TeX('$X_1$'), y = TeX('$X_2$')) +
+        scale_fill_gradient(name="Matrix\nentry\nvalue",
+                            limits = c(.Machine$double.eps, NA)) +
+        scale_colour_discrete(name=NULL) +
+        guides(fill = guide_colorbar(order = 1, barwidth = 1, barheight = 10), 
+               colour = guide_legend(order = 2, keywidth = 1, keyheight = 1, title.position = "bottom")) +
+        theme_minimal() +
+        theme(legend.spacing.y = unit(-0.3, "cm"))
+    
+    return(matrixPlot)
 }
 
-TP <- function(estimatedMatrix, 
-               adjacentMatrix,
-               partial = FALSE)
+plotFour <- function(benchResult)
 {
-    if(partial)
-    {
-        estimatedMatrix <- upper(estimatedMatrix)
-        adjacentMatrix <- upper(adjacentMatrix)
-    }
+    properData <- rbind(meltingMatrix((benchResult[[1]]$matrix > 0), benchResult[[1]]$name),
+                        meltingMatrix((benchResult[[2]]$matrix > 0), benchResult[[2]]$name),
+                        meltingMatrix((benchResult[[3]]$matrix > 0), benchResult[[3]]$name),
+                        meltingMatrix((benchResult[[4]]$matrix > 0), benchResult[[4]]$name))
     
-    TP <- sum((estimatedMatrix != 0) & adjacentMatrix)
+    colnames(properData) <- c("X1", "X2", colnames(properData)[3:4])
+    properData$value <- c("0", "1")[1+properData$value]
     
-    return(TP)
-}
-
-FN <- function(estimatedMatrix, 
-               adjacentMatrix,
-               partial = FALSE)
-{
-    if(partial)
-    {
-        estimatedMatrix <- upper(estimatedMatrix)
-        adjacentMatrix <- upper(adjacentMatrix)
-    }
+    mainTitle <- paste0("Comparision of different precision matrix estimation methods")
     
-    FN <- sum((estimatedMatrix == 0) & adjacentMatrix)
-    
-    return(FN)
-}
-
-TN <- function(estimatedMatrix, 
-               adjacentMatrix,
-               partial = FALSE)
-{
-    if(partial)
-    {
-        estimatedMatrix <- upper(estimatedMatrix)
-        adjacentMatrix <- upper(adjacentMatrix)
-    }
-    
-    TN <- sum((estimatedMatrix == 0) & !adjacentMatrix)
-    
-    return(TN)
-}
-
-FDP <- function(estimatedMatrix, 
-                adjacentMatrix,
-                partial = FALSE)
-{
-    if(partial)
-    {
-        estimatedMatrix <- upper(estimatedMatrix)
-        adjacentMatrix <- upper(adjacentMatrix)
-    }
-    
-    predictedPositive <- max(c(sum(estimatedMatrix != 0), 1))
-    
-    return(FP(estimatedMatrix, adjacentMatrix)/predictedPositive)
-}
-
-SN <- function(estimatedMatrix, 
-               adjacentMatrix,
-               partial = FALSE)
-{
-    if(partial)
-    {
-        estimatedMatrix <- upper(estimatedMatrix)
-        adjacentMatrix <- upper(adjacentMatrix)
-    }
-    
-    realPositive <- max(c(sum(adjacentMatrix), 1))
-    
-    return(TP(estimatedMatrix, adjacentMatrix)/realPositive)
-}
-
-SP <- function(estimatedMatrix, 
-               adjacentMatrix,
-               partial = FALSE)
-{
-    if(partial)
-    {
-        estimatedMatrix <- upper(estimatedMatrix)
-        adjacentMatrix <- upper(adjacentMatrix)
-    }
-    
-    realNegative <- max(c(sum(!adjacentMatrix), 1))
-    
-    return(TN(estimatedMatrix, adjacentMatrix)/realNegative)
+    out <- ggplot(properData, aes(x=X1, y=X2)) + 
+        geom_tile(aes(fill = factor(value))) +
+        labs(title =  mainTitle, x = TeX('$X_1$'), y = TeX('$X_2$')) +
+        facet_wrap(~index) +
+        scale_fill_manual(values = c("lightblue", "darkblue")) +
+        theme_minimal()
+    out
+    return(out)
 }
 
 plotDiffrence <- function(estimatedMatrix, adjacentMatrix, method = "graph", graphType = NULL, n = NULL, p = NULL, alpha = NULL)
@@ -138,7 +87,7 @@ plotDiffrence <- function(estimatedMatrix, adjacentMatrix, method = "graph", gra
     properData$value <- c("FP", "TP", "FN", "TN")[properData$value]
     
     x <- as.factor(properData$value)
-     
+    
     levels(x) <- c("FP", "TP", "FN", "TN")
     
     mainTitle <- paste0("Difference beetwen real & estimated matrix for ", method)
@@ -152,7 +101,7 @@ plotDiffrence <- function(estimatedMatrix, adjacentMatrix, method = "graph", gra
         labs(title =  mainTitle, subtitle = subTitle, fill = "Matrix\nestimator", 
              x = TeX('$X_1$'), y = TeX('$X_2$')) +
         theme_minimal()
-
+    
     return(out)
 }
 

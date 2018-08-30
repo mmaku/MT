@@ -8,15 +8,13 @@ require(MASS)
 require(glasso)
 require(huge)
 
-source("01 auxilaryFunctions.R")
-source("04 admmGLASSO.R")
-source("07 admmGSLOPE.R")
-source("08 benchOneFunctions")
+source("auxilaryFunctions.R")
+source("admmGLASSO.R")
+source("admmGSLOPE.R")
+source("benchOneFunctions")
 
 
-set.seed(100)
-
-data  <- scale(dataSimulator(n = 100, SNR = 1, K = 5, numb.vars = 30, max.dim = 3)$X)
+data  <- scale(huge.generator(n=100, d=100, graph="scale-free")$data)
 
 str(data)
 
