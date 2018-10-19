@@ -16,6 +16,7 @@ source("errorTypes.R")
 measures <- function(n = 150, 
                      p = 200, 
                      graphType = "cluster",
+                     graphParameters = NULL, 
                      alpha = 0.05, 
                      penalizeDiagonal = FALSE, 
                      additionalMethods = NULL,
@@ -34,21 +35,26 @@ measures <- function(n = 150,
     }
 
     methods <- c("gLASSO", 
-                 "holmgSLOPE",
-                 "BHgSLOPE", names(additionalMethods))
+                 "banerjee.gLASSO",
+                 "holm.gSLOPE",
+                 "BH.gSLOPE", names(additionalMethods))
     zeros <- rep_len(0, length(methods))
-    results <- data.frame(procedure = methods, FDR = zeros, localFDR = zeros, SN = zeros, SP = zeros)
+    results <- data.frame(procedure = methods, FDR = zeros, localFDR = zeros, Power = zeros, SP = zeros)
     
     # gLASSO parameters
+    gLassoLambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "glasso", verbose = FALSE)
     banerjeeLambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "banerjee", verbose = FALSE)
-        
+    
     # gSLOPE parameters
     holmlambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "holm", verbose = FALSE)
     BHlambda <- lambdaSelector(input = p, n = n, alpha = alpha, method = "BH", verbose = FALSE) 
     
     for(i in seq_len(iterations))
     {
-        generatedData <- huge.generator(n = n, d = p, graph = graphType, verbose = FALSE) 
+        generatedData <- doCall("huge.generator", 
+                                n = n, d = p, graph = graphType, verbose = FALSE, vis = FALSE,
+                                args = graphParameters)
+        
         adjacent <- properAdjacent(generatedData$theta)
         
         proc <- 1
@@ -57,15 +63,20 @@ measures <- function(n = 150,
         {
             if(m == "gLASSO")
             {
+                omegaHat <- glasso(s = generatedData$sigmahat, rho = gLassoLambda, thr = epsilon,
+                                   penalize.diagonal = penalizeDiagonal)$wi    
+            } else if(m == "banerjee.gLASSO")
+            {
                 omegaHat <- glasso(s = generatedData$sigmahat, rho = banerjeeLambda, thr = epsilon,
                                    penalize.diagonal = penalizeDiagonal)$wi    
-            } else if(m == "holmgSLOPE")
+            } else if(m == "holm.gSLOPE")
+                
             {
                 omegaHat <- gslopeADMM(sampleCovariance = generatedData$sigmahat, lambda = holmlambda,
                                        penalizeDiagonal = penalizeDiagonal,
                                        absoluteEpsilon = epsilon,
                                        verbose = FALSE)$precisionMatrix
-            } else if(m == "BHgSLOPE")
+            } else if(m == "BH.gSLOPE")
             {
                 omegaHat <- gslopeADMM(sampleCovariance = generatedData$sigmahat, lambda = BHlambda,
                                        penalizeDiagonal = penalizeDiagonal, 
@@ -82,9 +93,11 @@ measures <- function(n = 150,
                 omegaHat <- properAdjacent(omegaHat)   
             }
         
+            # omegaHat <- omegaHat*(omegaHat>0)
+            
             results[proc,"FDR"] <- results[proc,"FDR"] + FDP(omegaHat, adjacent)
             results[proc,"localFDR"] <- results[proc,"localFDR"] + localFDP(omegaHat, adjacent)
-            results[proc, "SN"] <- results[proc,"SN"] + SN(omegaHat, adjacent)
+            results[proc, "Power"] <- results[proc,"Power"] + SN(omegaHat, adjacent)
             results[proc, "SP"] <- results[proc,"SP"] + SP(omegaHat, adjacent)
             
             proc = proc + 1

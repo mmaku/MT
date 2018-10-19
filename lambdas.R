@@ -34,6 +34,7 @@ lambdaSelector <- function(input, n, alpha = 0.05, method = "banerjee", verbose 
         }
         
         out <- switch(method,
+                      glasso = lambdaGLASSO(p, n, alpha, twoLargestProd),
                       banerjee = lambdaBanerjee(p, n, alpha, twoLargestProd),
                       BH = lambdaBH(p, n, alpha, twoLargestProd),
                       holm = lambdaHolm(p, n, alpha, twoLargestProd))
@@ -43,6 +44,15 @@ lambdaSelector <- function(input, n, alpha = 0.05, method = "banerjee", verbose 
     }
     
     return(out)
+}
+
+# gLASSO (not sure if done properly - problem with sigma i.e. twoLargestProd if data not scaled)
+lambdaGLASSO <- function(p, n, alpha = 0.05, twoLargestProd = 1)
+{
+    pGLASSO <- p*(p-1)/2
+    fraction <- qt(1-alpha/2/pGLASSO, df = n-2)/sqrt(n-2+qt(1-alpha/2/pGLASSO, df = n-2)^2)
+    
+    return(twoLargestProd*fraction)
 }
 
 # Banerjee for gLASSO (not sure if done properly - problem with sigma i.e. twoLargestProd if data not scaled)

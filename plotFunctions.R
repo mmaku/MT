@@ -1,6 +1,10 @@
-# Written by Micha³ Makowski
+# Written by Micha? Makowski
 
 # Plotting functions
+require(ggplot2, quietly = TRUE)
+require(latex2exp, quietly = TRUE)
+require(reshape2, quietly = TRUE)
+
 
 # Covariance matrix plot
 plotCovarianceStructure <- function(covarianceMatrix)
@@ -12,7 +16,7 @@ plotCovarianceStructure <- function(covarianceMatrix)
     
     covPlot <- ggplot(df1, aes(x=X1, y=X2)) + geom_tile(aes(fill=value)) +
         theme(axis.ticks = element_blank(), 
-              axis.text.x = element_text(angle = 330, hjust = 0, vjust = 1, colour = "grey50"),
+              axis.text.x = element_text(angle = 330, hjust = 0, vjust = 1, colour = "grwarningey50"),
               axis.text.y = element_text(colour = "grey50"),
               panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
               panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
@@ -27,14 +31,24 @@ plotMatrix <- function(matrix,
 {
     colnames(matrix) <- 1:ncol(matrix)
     rownames(matrix) <- 1:ncol(matrix)
-    properData <- melt(matrix)
+    properData <- gather(matrix)
     
     colnames(properData) <- c("X1", "X2", "value")
     
-    matrixPlot <- ggplot(properData, aes(x=X1, y=X2)) + 
-        geom_tile(data = subset(properData, !is.zero(value)), aes(fill = value)) +
-        geom_tile(data = subset(properData,  is.zero(value)), aes(colour = "0"), 
-                  linetype = 0, fill = "grey50", alpha = .5) +
+    matrixPlot <- ggplot(properData, aes(x=X1, y=X2))
+    
+    if(length(subset(properData,  isZero.default(value, neps=10))[[1]]) == 0)
+    {
+        matrixPlot <- matrixPlot +
+            geom_tile(data = properData, aes(fill = value))
+    } else
+    {
+        matrixPlot <- matrixPlot +
+            geom_tile(data = subset(properData, !isZero.default(value, neps=10)), aes(fill = value)) +
+            geom_tile(data = subset(properData,  isZero.default(value, neps=10)), aes(colour = "0"), 
+                      linetype = 0, fill = "grey50", alpha = .5)
+    }
+    matrixPlot <- matrixPlot +
         labs(title = title, x = TeX('$X_1$'), y = TeX('$X_2$')) +
         scale_fill_gradient(name="Matrix\nentry\nvalue",
                             limits = c(.Machine$double.eps, NA)) +

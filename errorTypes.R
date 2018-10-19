@@ -1,6 +1,6 @@
 # Written by Micha³ Makowski
 
-source("auxilaryFunctions.R") # upper
+source("auxilaryFunctions.R") # upper, isZero
 require(igraph, quietly = TRUE) # edge_connectivity, graph_from_adjacency_matrix
 
 # Measures
@@ -75,7 +75,7 @@ localFDP <- function(estimatedMatrix,
     {
         for (j in seq_len(i-1))
         {
-            adjacentMatrix[j,i] <- !isZero(edge_connectivity(adjacentMatrixIG, j, i))
+            adjacentMatrix[j,i] <- !(edge_connectivity(adjacentMatrixIG, j, i) == 0)
         }
         
     }
@@ -83,6 +83,7 @@ localFDP <- function(estimatedMatrix,
     predictedPositive <- max(c(sum(upper(estimatedMatrix) != 0), 1))
     
     return(FP(estimatedMatrix, adjacentMatrix)/predictedPositive)
+    # return(adjacentMatrix)
 }
 
 

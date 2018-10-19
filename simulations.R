@@ -5,64 +5,69 @@ library(foreach)
 source("simulationsFunctions.R")
 
 # Cluster structure 
-clusters <- createSimulationMatrix(nVec = c(50, 100, 150), 
-                                   pVec = 100, 
-                                   graphTypeVec = c("cluster"),
-                                   alphaVec = c(0.05, 0.05*99/2/100), 
-                                   penalizeDiagonalVec = FALSE, 
-                                   iterationsVec = 3000)
+clusterBHtest <- createSimulationMatrix(nVec = 75, 
+                                        pVec = 100, 
+                                        graphTypeVec = "cluster",
+                                        alphaVec = c(0.05, 0.05*99/2/100), 
+                                        penalizeDiagonalVec = FALSE, 
+                                        iterationsVec = 3000)
 
-# Scall-free structure
-scale3 <- createSimulationMatrix(nVec = c(25, 50, 75),
+cluster <- createSimulationMatrix(nVec = c(50, 100, 150),
+                                  pVec = 100,
+                                  graphTypeVec = "cluster",
+                                  alphaVec = c(0.1, 0.05, 0.01),
+                                  penalizeDiagonalVec = FALSE,
+                                  iterationsVec = 3000)
+
+
+# Scall-free structure14
+scale3sBHtest <- createSimulationMatrix(nVec = 50,
                                  pVec = 50, 
-                                 graphTypeVec = c("scale-free"),
+                                 graphTypeVec = "hub",
                                  alphaVec = c(0.05, 0.05*49/2/50), 
                                  penalizeDiagonalVec = FALSE, 
+                                 iterationsVec = 2000)
+
+scale3 <- createSimulationMatrix(nVec = c(50, 100, 150),
+                                 pVec = 100,
+                                 graphTypeVec = "hub",
+                                 alphaVec = c(0.1, 0.05, 0.01),
+                                 penalizeDiagonalVec = FALSE,
+                                 iterationsVec = 2000)
+
+# Scall-free structure14
+scale3sBHtest <- createSimulationMatrix(nVec = 50,
+                                        pVec = 50, 
+                                        graphTypeVec = "scale-free",
+                                        alphaVec = c(0.05, 0.05*49/2/50), 
+                                        penalizeDiagonalVec = FALSE, 
+                                        iterationsVec = 3000)
+
+scale3 <- createSimulationMatrix(nVec = c(50, 100, 150),
+                                 pVec = 100,
+                                 graphTypeVec = "scale-free",
+                                 alphaVec = c(0.1, 0.05, 0.01),
+                                 penalizeDiagonalVec = FALSE,
                                  iterationsVec = 3000)
-
-# Hub structure
-hubs <- createSimulationMatrix(nVec = c(100, 200, 300),
-                               pVec = 200, 
-                               graphTypeVec = c("cluster"),
-                               alphaVec = c(0.05, 0.05*199/2/200), 
-                               penalizeDiagonalVec = FALSE, 
-                               iterationsVec = 3000)
-
-main <- createSimulationMatrix(nVec = 75,
-                               pVec = 100,
-                               graphTypeVec = c("hub", "cluster"),
-                               alphaVec = c(0.1, 0.05, 0.01),
-                               penalizeDiagonalVec = FALSE,
-                               iterationsVec = 3000)
+# N increment test
+Nincrement <- createSimulationMatrix(nVec = c(20,80,320,1280,5120),
+                                     pVec = 80,
+                                     graphTypeVec = "cluster",
+                                     alphaVec = 0.05,
+                                     penalizeDiagonalVec = FALSE,
+                                     iterationsVec = 3000)
 
 
-# Methods comparison
-# methods <- createSimulationMatrix(nVec = 200, 
-#                                   pVec = 200, 
-#                                   graphTypeVec = c("cluster"),
-#                                   alphaVec = c(0.05), 
-#                                   penalizeDiagonalVec = FALSE, 
-#                                   iterationsVec = 3000)
-# 
-# additional <- list(starsMB = list(method = "mb", criterion = "stars"),
-#                    ricMB = list(method = "mb"),
-#                    starsgLASSO = list(method = "glasso", criterion = "stars"),
-#                    ricgLASSO = list(method = "glasso"),
-#                    ebicgGLASSO = list(method = "glasso", criterion = "ebic"))
-
-# methodsTest <- simulations(methods,
-#                            saveAll = TRUE,
-#                            additionalMethods = additional)
-
-
-cl<-makeCluster(4) #change the 2 to your number of CPU cores
+cl<-makeCluster(7) #change the 2 to your number of CPU cores
 registerDoSNOW(cl)
 
 doparList <-list(list(clusters, NULL), 
-                 list(scale3, NULL),
+                 list(scale3s, NULL),
                  list(hubs, NULL),
-                 # list(methods, additional),
-                 list(main, NULL))
+                 list(cluster, NULL),
+                 list(scale3, NULL),
+                 list(hub, NULL),
+                 list(Nincrement, NULL))
 results <- list() 
 results <- foreach(i = doparList) %dopar% {
     source("simulationsFunctions.R")

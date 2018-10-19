@@ -7,7 +7,7 @@ require(glasso)
 require(huge)
 require(tictoc)
 
-source("measures.R")
+source("fastMeasures.R")
 
 createSimulationMatrix <- function(nVec = 150, 
                                    pVec = 200, 
@@ -25,32 +25,22 @@ createSimulationMatrix <- function(nVec = 150,
 
 simulations <- function(simulationMatrix, 
                         graphParameters = NULL, 
-                        additionalMethods = NULL, 
-                        verbose = TRUE,
-                        saveEach = FALSE,
                         saveAll = FALSE,
-                        fileName = "")
+                        fileName = "",
+                        testLocalFDR = TRUE)
 {
     tic("All")
     ticFile <- paste0("./!02 Data/01 Binded/tic", fileName, ".txt")
     
     specificDoCall <- function(x) 
         doCall("measures", 
-               graphParameters = graphParameters, additionalMethods = additionalMethods, verbose = FALSE, 
+               graphParameters = graphParameters, testLocalFDR = testLocalFDR, verbose = FALSE, 
                args = x)
     
-    if(verbose) 
-    {
-        cat("Starting simulations\nnumber of setups = ", NROW(simulationMatrix), 
-            "\nnumber of simulations = ", sum(simulationMatrix$iterations), ".\n")
-        
-        progressBar <- txtProgressBar(min = 0, max = sum(simulationMatrix$iterations), style = 3)
-        setTxtProgressBar(progressBar, 0)
-    }
     if(saveAll)
     {
         filenameAll <- paste0("AllSimulations", fileName, "@", format(Sys.time(), '%y_%m_%d@%H_%M'), "#",
-                              NROW(simulationMatrix)*(3+NROW(additionalMethods)))
+                              NROW(simulationMatrix)*3)
     }
     
     output <- list()
@@ -63,40 +53,23 @@ simulations <- function(simulationMatrix,
         simResults <- specificDoCall(simulationMatrix[r,])
         output[[r]] <- cbind(simResults, simulationMatrix[r,], row.names = NULL)
         
-        if(saveEach)
-        {
-            filename <- paste0("OneSimulation_", 
-                               # format(Sys.time(), '%y_%m_%d_%H_%M'), 
-                               paste(simulationMatrix[r,], collapse = '_'))
-            
-            setup <- simulationMatrix[r,]
-            
-            save(simResults, setup, additionalMethods, graphParameters, 
-                 file = paste0("./!02 Data/", filename, ".RData"))
-        }
         if(saveAll)
         {
             tempOutput <- do.call("rbind", output)
-            save(tempOutput, additionalMethods, graphParameters, 
+            save(tempOutput, graphParameters, 
                  file = paste0("./!02 Data/01 Binded/", filenameAll, ".RData"))
         }
-        
-        if(verbose)
-            setTxtProgressBar(progressBar, sum(simulationMatrix$iterations[1:r]))
         
         toc(quiet = TRUE, log = TRUE)
         write(tic.log()[[1]], file = ticFile, append = TRUE)
         tic.clearlog()
     }
     
-    if(verbose)
-        close(progressBar)
-    
     output <- do.call("rbind", output)
     
     if(saveAll)
     {
-        save(output, additionalMethods, graphParameters, 
+        save(output, graphParameters, 
              file = paste0("./!02 Data/01 Binded/", filenameAll, ".RData"))
     }
     

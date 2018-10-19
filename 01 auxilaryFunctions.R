@@ -32,8 +32,6 @@ plotCovarianceStructure <- function(covarianceMatrix)
 plotMatrix <- function(matrix, 
                        title = NULL)
 {
-    plotMatrix <- as.numeric(plotMatrix)
-    
 	colnames(matrix) <- 1:NCOL(matrix)
 	rownames(matrix) <- 1:NCOL(matrix)
 	properData <- melt(matrix)
@@ -41,8 +39,8 @@ plotMatrix <- function(matrix,
 	colnames(properData) <- c("X1", "X2", "value")
 
     out <- ggplot(properData, aes(x=X1, y=X2)) + 
-        geom_tile(data = subset(properData, !is.zero(value)), aes(fill = value)) +
-        geom_tile(data = subset(properData,  is.zero(value)), aes(colour = "0"), 
+        geom_tile(data = subset(properData, !(value == 0)), aes(fill = value)) +
+        geom_tile(data = subset(properData,  (value == 0)), aes(colour = "0"), 
                   linetype = 0, fill = "grey50", alpha = .5) +
 	    labs(title = title, x = TeX('$X_1$'), y = TeX('$X_2$')) +
         scale_fill_gradient(name="Matrix\nentry\nvalue",

@@ -14,9 +14,9 @@ source("softThresholding.R")
 # verbose - console output
 
 glassoADMM <- function(sampleCovariance, 
-                       mu = 1, 
                        lambda = 1,
-                       penalizeDiagonal = TRUE,
+                       penalizeDiagonal = FALSE,
+                       mu = 1, 
                        maxIter = 1e5, 
                        absoluteEpsilon = 1e-4, 
                        # relativeEpsilon = 1e-4, 
