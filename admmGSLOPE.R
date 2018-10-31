@@ -19,7 +19,8 @@ source("OWL1prox.R")
 gslopeADMM <- function(sampleCovariance, 
                        lambda = NULL, 
                        penalizeDiagonal = FALSE,
-                       mu = 1, 
+                       mu = 1.1, 
+                       Y = NULL,
                        maxIter = 1e5, 
                        absoluteEpsilon = 1e-4, 
                        # relativeEpsilon = 1e-4, 
@@ -64,7 +65,8 @@ gslopeADMM <- function(sampleCovariance,
     # Initialization
     
     Z <- sampleCovariance*0 # Initialize Lagragian to be nothing (seems to work well)
-    Y <- Z 
+    if(is.null(Y))
+        Y <- Z 
     X <- diag(nrow = p)
 
     # ADMM algotithm

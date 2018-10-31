@@ -18,7 +18,8 @@ source("OWL1prox.R")
 
 gslopeADMM <- function(sampleCovariance, 
                        lambda = NULL,
-                       maxIter = 1e5, 
+                       Y = NULL,
+                       maxIter = 100, 
                        absoluteEpsilon = 1e-4)
 {
     p <- ncol(sampleCovariance)
@@ -34,7 +35,8 @@ gslopeADMM <- function(sampleCovariance,
     # Initialization
     
     Z <- sampleCovariance*0 # Initialize Lagragian to be nothing (seems to work well)
-    Y <- Z 
+    if(is.null(Y))
+        Y <- Z 
     X <- diag(nrow = p)
 
     # ADMM algotithm
@@ -42,24 +44,24 @@ gslopeADMM <- function(sampleCovariance,
     for(n in 1:maxIter)
     {
         # Solve sub-problem to solve X
-        Ctilde <- Y-Z-sampleCovariance
+        Ctilde <- Y-Z-sampleCovariance/1.1
         Ceigen <- eigen(Ctilde, symmetric = TRUE)
         CeigenVal <- Ceigen$val
         CeigenVec <- Ceigen$vec
-        Fmu <- 1/2*diag(CeigenVal+sqrt(CeigenVal*CeigenVal+4))
+        Fmu <- 1/2*diag(CeigenVal+sqrt(CeigenVal*CeigenVal+4/1.1))
         X <- CeigenVec%*%Fmu%*%t(CeigenVec)
         
         # Solve sub-problem to solve Y
         Yold <- Y 
         # Y <- softThresholding(X+Z, lambda/mu) 
-        Y <- matrixOWL1prox(X+Z, lambda, FALSE) 
+        Y <- matrixOWL1prox(X+Z, lambda/1.1, FALSE) 
         
         # Update the Lagrangian
-        Z <- Z + (X-Y)
+        Z <- Z + 1.1*(X-Y)
         
         # Residuals
         primalResidual <- norm(X-Y, type = "F")
-        dualResidual   <- norm((Y-Yold), type = "F")
+        dualResidual   <- norm(1.1*(Y-Yold), type = "F")
         
         # Stopping criteria
         primalEpsilon <- absoluteEpsilon # + relativeEpsilon*max(l2norm(X), l2norm(Y))

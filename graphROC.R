@@ -1,8 +1,8 @@
 
-results <- graphROC(n = 150, 
-                    p = 200, 
+results <- graphROC(n = 100, 
+                    p = 100, 
                     graphType = "cluster",
-                    graphParameters = NULL, 
+                    graphParameters = list(), 
                     method = "banerjee",
                     alpha = 0.05, 
                     alphaMulti = c(1/30, 3/2),

@@ -3,7 +3,7 @@
 # Plotting functions
 require(ggplot2, quietly = TRUE)
 require(latex2exp, quietly = TRUE)
-require(reshape2, quietly = TRUE)
+require(tidyr, quietly = TRUE)
 
 
 # Covariance matrix plot
@@ -13,10 +13,11 @@ plotCovarianceStructure <- function(covarianceMatrix)
     rownames(covarianceMatrix) <- 1:ncol(covarianceMatrix)
     df1 <- melt(covarianceMatrix)
     df1$value <- as.factor(df1$value)
+    names(df1)[1:2] <- c("X1", "X2")
     
     covPlot <- ggplot(df1, aes(x=X1, y=X2)) + geom_tile(aes(fill=value)) +
         theme(axis.ticks = element_blank(), 
-              axis.text.x = element_text(angle = 330, hjust = 0, vjust = 1, colour = "grwarningey50"),
+              axis.text.x = element_text(angle = 330, hjust = 0, vjust = 1, colour = "grey50"),
               axis.text.y = element_text(colour = "grey50"),
               panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
               panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
@@ -29,9 +30,10 @@ plotCovarianceStructure <- function(covarianceMatrix)
 plotMatrix <- function(matrix, 
                        title = NULL)
 {
+    matrix <- abs(matrix)
     colnames(matrix) <- 1:ncol(matrix)
     rownames(matrix) <- 1:ncol(matrix)
-    properData <- gather(matrix)
+    properData <- melt(matrix)
     
     colnames(properData) <- c("X1", "X2", "value")
     
@@ -50,7 +52,7 @@ plotMatrix <- function(matrix,
     }
     matrixPlot <- matrixPlot +
         labs(title = title, x = TeX('$X_1$'), y = TeX('$X_2$')) +
-        scale_fill_gradient(name="Matrix\nentry\nvalue",
+        scale_fill_gradient(name="Matrix\nentry\nabsolute value",
                             limits = c(.Machine$double.eps, NA)) +
         scale_colour_discrete(name=NULL) +
         guides(fill = guide_colorbar(order = 1, barwidth = 1, barheight = 10), 

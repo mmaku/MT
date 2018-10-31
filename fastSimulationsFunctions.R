@@ -13,12 +13,13 @@ createSimulationMatrix <- function(nVec = 150,
                                    pVec = 200, 
                                    graphTypeVec = "cluster",
                                    alphaVec = 0.05,
+                                   scaledVec = TRUE,
                                    penalizeDiagonalVec = FALSE, 
                                    iterationsVec = 1000)
 {
-    output <- expand.grid(nVec, pVec, graphTypeVec, alphaVec, penalizeDiagonalVec, iterationsVec,
+    output <- expand.grid(nVec, pVec, graphTypeVec, alphaVec, penalizeDiagonalVec, scaledVec, iterationsVec,
                           KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
-    colnames(output) <- c("n", "p", "graphType", "alpha", "penalizeDiagonal", "iterations")
+    colnames(output) <- c("n", "p", "graphType", "alpha", "penalizeDiagonal", "scaled", "iterations")
     
     return(output)
 }

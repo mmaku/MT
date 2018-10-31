@@ -10,8 +10,8 @@ source("fastSimulationsFunctions.R")
 # Cluster structure 
 clusters <- createSimulationMatrix(nVec = c(50, 100, 200, 400), 
                                    pVec = 100, 
-                                   graphTypeVec = c("cluster"),
-                                   alphaVec = c(0.05, 0.1, 0.2), 
+                                   graphTypeVec = c("cluster", "hub"),
+                                   alphaVec = c(0.05, 0.2), 
                                    penalizeDiagonalVec = FALSE, 
                                    iterationsVec = 3000)
 
@@ -31,6 +31,14 @@ graphStructure_large_20 <- list(v = 0.7,
                              u = 0.3,
                              g = 20,
                              prob = 0.5)
+graphStructure_equal_5 <- list(v = -1,
+                               u = 1,
+                               g = 5,
+                               prob = 0.5)
+graphStructure_equal_20 <- list(v = -1,
+                                u = 1,
+                                g = 20,
+                                prob = 0.5)
 
 
 cl<-makeCluster(3) #your number of CPU cores
@@ -39,15 +47,17 @@ registerDoSNOW(cl)
 doparList <-list(list(clusters, graphStructure_small_5), 
                  list(clusters, graphStructure_small_20), 
                  list(clusters, graphStructure_large_5), 
-                 list(clusters, graphStructure_large_20))
+                 list(clusters, graphStructure_large_20), 
+                 list(clusters, graphStructure_equal_5), 
+                 list(clusters, graphStructure_equal_20))
 results <- list() 
 results <- foreach(i = doparList) %dopar% {
     source("fastSimulationsFunctions.R")
     simulations(i[[1]],
                 saveAll = TRUE,
-                testLocalFDR = FALSE,
+                testLocalFDR = TRUE,
                 graphParameters = i[[2]],
-                fileName = paste0("_Num_",i[[2]]$v,"_",i[[2]]$g))
+                fileName = paste0("_HC_scaled_FDR_Num_",i[[2]]$v,"_",i[[2]]$g))
 }
 
 stopCluster(cl)
