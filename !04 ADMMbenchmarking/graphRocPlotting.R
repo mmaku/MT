@@ -1,81 +1,91 @@
 # Written by Micha³ Makowski
 
-require(dplyr, quietly = TRUE)
-require(tidyr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(tikzDevice, quietly = TRUE)
 require(xtable, quietly = TRUE)
+require(dplyr, quietly = TRUE)
+require(tidyr, quietly = TRUE)
+require(tibble, quietly = TRUE)
+
+load("./!02 Data/01 Binded/01 AllOne/ROCfinal.RData")
+load("./!02 Data/01 Binded/ROC5.RData")
 
 
-load("./!02 Data/01 Binded/01 AllOne/ROC.RData")
 
-results %>%
-    select(-c(procedure, multi)) %>%
-    as_tibble() -> finalResults
-
-colnames(finalResults)[5] <- "graph.u"
-colnames(finalResults)[3] <- "graphType"
-
-gt <- unique(finalResults$graphType)[1]
-u <- unique(finalResults$graph.u)[1]
-
-for(gt in unique(finalResults$graphType))
+result <- resultsList[[1]]
+for(result in resultsList)
 {
-    for(u in unique(finalResults$graph.u))
-    {
-        finalResults %>%
-            filter(graphType == gt & graph.u == u) %>%
-            mutate(met = recode_factor(met,
-                                             `banerjee` = "gLasso (Banerjee)", 
-                                             `BH` = "gSLOPE (BH)",
-                                             `holm` = "gSLOPE (Holm)")) %>%
-            ggplot(aes(x = 1-SP, y = SN, color = met)) +
-            geom_line(size = 1)+ 
-            ylim(c(0,1)) +
-            xlim(c(0,1)) +
-            labs(title = "ROC curve",
-                 subtitle = paste("Setup: p = $100", 
-                                  ifelse(gt != "scale-free", 
-                                         paste("$, number of components = $10$,"), 
-                                         "$,"), 
-                                  "scaled parameter $\\alpha$ = $0.05$, graph type =", gt,
-                                  ifelse(gt == "cluster", 
-                                         paste(", $\\prob(x_{ij}\\neq0)=1$,"), 
-                                         ","),
-                                  "SNR = $",round(1/(1-u),2),"$."),
-                 y = "Sensitivity",
-                 x = "1-Specificity") +
-            labs(subtitle = paste0("Setup: scaled $\\alpha$ = $", a, "$, $",  p,
-                                   ifelse(gt != "scale-free", 
-                                          paste0("$ variables, $", g, "$ components, "), 
-                                          "$ variables, "),
-                                   gt, " graph",
-                                   ifelse(gt == "cluster", 
-                                          paste0(", $prob(x_{ij}\\neq0)=", prob, "$."), 
-                                          ".")),
-                 y = "Value",
-                 x = "Sample size n") +            
-            scale_color_discrete(name = "Procedure:") +
-            # theme_bw() +
-            theme_bw(base_size = 8) +
-            guides(color = guide_legend(override.aes = aes(size = 2)),
-                   shape = guide_legend(override.aes = aes(size = 2))) +
-            theme(aspect.ratio = 8/8, 
-                  plot.margin = margin(c(0,0,0,0)),
-                  legend.margin = margin(c(0,10,0,0)))  -> myPlot
-        
-        ggsave(paste0("!01 Plots/01 Results/04 ROC/ROCprob1_", gt, "_", u, ".png"), myPlot, 
-               width = 5.4, height = 5.4*myPlot$theme$aspect.ratio )
-        dev.off()
-        
-        tikz(file = paste0("!01 Plots/01 Results/04 ROC/ROCprob1_", gt, "_", u, ".tikz"), 
-             width = 5.4, height = 5.4*myPlot$theme$aspect.ratio )
-        plot(myPlot)
-        dev.off()
-        
-        # print(xtable(myResults,
-        #              caption = "Power and FDR of each procedure",
-        #              auto = TRUE),
-        #       booktabs = TRUE)
-    }
+    SNR <- round((result$graphParameters$v+result$graphParameters$u)/result$graphParameters$v, 
+                 digits = 2)
+    gt <- result$graphType
+    prob <- result$graphParameters$prob
+    
+    result$results %>%
+        matrix(ncol = 3, byrow = TRUE) %>%
+        as_tibble() %>%
+        add_column(V4 = rep(dimnames(result$results)[[3]], 
+                            each = dim(result$results)[2])) %>%
+        mutate(method = recode_factor(V4,
+                                      `banerjee.gLASSO` = "gLasso (Banerjee)", 
+                                      `BH.gSLOPE` = "gSLOPE (BH)",
+                                      `holm.gSLOPE` = "gSLOPE (Holm)")) %>%
+        select(-V4) %>%
+        group_by(method) -> result$finalResults
+    
+    colnames(result$finalResults) <- c(dimnames(result$results)[[1]], "method")
+    
+    result$finalResults %>%
+        # select(-multiplier) %>%
+        ggplot(aes(x = 1-SP, y = SN, color = method, size = multiplier)) +
+        geom_line(size = 1) +
+        geom_point() +
+        ylim(c(0,1)) +
+        xlim(c(0,1)) +
+        labs(subtitle = paste0("Setup: scaled $\\alpha$ = $0.05$, $100",
+                               ifelse(gt != "scale-free", 
+                                      paste0("$ variables, $", result$graphParameters$g, 
+                                             "$ components, "), 
+                                      "$ variables, "),
+                               gt, " graph, $SNR$ = $", SNR,
+                               ifelse(gt == "cluster", 
+                                      paste0("$, $prob(x_{ij}\\neq0)=", 
+                                             prob, "$."), 
+                                      "$.")),
+             y = "TPR",
+             x = "FPR") +            
+        scale_color_discrete(name = "Procedure:") +
+        theme_bw(base_size = 8) +
+        guides(color = guide_legend(override.aes = aes(size = 2)),
+               shape = guide_legend(override.aes = aes(size = 2))) +
+        theme(aspect.ratio = 1, 
+              legend.position = "bottom",
+              legend.direction = "horizontal",
+              legend.box = "vertical",
+              legend.spacing = unit(0, "cm"),
+              plot.margin = margin(c(5,0,0,0)),
+              legend.margin = margin(c(0,0,0,0))) -> myPlot
+    
+    ggsave(paste0("!01 Plots/01 Results/04 ROC/ROC_", gt, 
+                  ifelse(gt == "cluster", paste0("_", prob, "_"), "_"), 
+                  SNR, ".png"), myPlot, 
+           width = 5.4, height = 5.4*myPlot$theme$aspect.ratio )
+    dev.off()
+    
+    tikzTitle <- paste0("!01 Plots/01 Results/04 ROC/ROC_", gt, 
+                        ifelse(gt == "cluster", paste0("_", prob, "_"), "_"), 
+                        SNR, ".tikz")
+    
+    tikz(file = tikzTitle, 
+         width = 5.4, height = 5.4*myPlot$theme$aspect.ratio )
+    plot(myPlot)
+    dev.off()
+    
+    lines <- readLines(con = tikzTitle)
+    lines <- lines[-which(grepl("\\path\\[clip\\]*", x = lines, perl=F))]
+    lines <- lines[-which(grepl("\\path\\[use as bounding box*", x = lines, perl=F))]
+    lines <- gsub(pattern = "SNR", replace = "\\SNR", x = lines, fixed = TRUE)
+    lines <- gsub(pattern = "prob", replace = "\\prob", x = lines, fixed = TRUE)
+    writeLines(lines,con = tikzTitle)
+    
+    
 }

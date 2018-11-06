@@ -35,7 +35,6 @@ for(gt in unique(bindedResults$graphType))
 {
     for(a in unique(bindedResults$alpha))
     {
-        
         bindedResults %>%
             filter(graphType == gt & alpha == a) %>%
             # filter(graph.v > 0) %>%

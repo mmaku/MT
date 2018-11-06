@@ -8,26 +8,26 @@ library(dplyr)
 source("fastSimulationsFunctions.R")
 
 # Cluster structure 
-iters5120 <- createSimulationMatrix(nVec = 100, 
+iters40960 <- createSimulationMatrix(nVec = 100, 
                                     pVec = 100, 
                                     graphTypeVec = "cluster",
                                     alphaVec = 0.05,
                                     penalizeDiagonalVec = FALSE, 
-                                    iterationsVec = 5120)
+                                    iterationsVec = 40960)
 
-iters2560 <- createSimulationMatrix(nVec = 100, 
+iters20480 <- createSimulationMatrix(nVec = 100, 
                                     pVec = 100, 
                                     graphTypeVec = "cluster",
                                     alphaVec = 0.05,
                                     penalizeDiagonalVec = FALSE, 
-                                    iterationsVec = c(5,10,20,40,80,160,320,640,1280,2560))
+                                    iterationsVec = c(10,20,40,80,160,320,640,1280,2560, 5120, 10240, 20480))
 
-graphStructure_02_08 <- list(v = 0.2,
-                             u = 0.8,
+graphStructure_02_08 <- list(v = 0.3,
+                             u = 0.7,
                              g = 10,
-                             prob = 1)
-graphStructure_08_02 <- list(v = 0.8,
-                             u = 0.2,
+                             prob = 0.5)
+graphStructure_08_02 <- list(v = 0.7,
+                             u = 0.3,
                              g = 10,
                              prob = 1)
 
@@ -35,16 +35,16 @@ graphStructure_08_02 <- list(v = 0.8,
 cl<-makeCluster(2) #your number of CPU cores
 registerDoSNOW(cl)
 
-doparList <-list(list(iters2560, graphStructure_02_08, "_Iter2560_"), 
-                 list(iters2560, graphStructure_08_02, "_Iter2560_"), 
-                 list(iters5120, graphStructure_02_08, "_Iter5120_"), 
-                 list(iters5120, graphStructure_08_02, "_Iter5120_"))
+doparList <-list(list(iters20480, graphStructure_02_08, "_Iter20480_"), 
+                 list(iters20480, graphStructure_08_02, "_Iter20480_"), 
+                 list(iters40960, graphStructure_02_08, "_Iter40960_"), 
+                 list(iters40960, graphStructure_08_02, "_Iter40960_"))
                  
 results <- list() 
 results <- foreach(i = doparList) %dopar% {
     source("simulationsFunctions.R")
     simulations(i[[1]],
-                saveAll = FALSE,
+                saveAll = TRUE,
                 graphParameters = i[[2]],
                 testLocalFDR = FALSE, 
                 fileName = paste0(i[[3]], i[[2]]$v,"_",i[[2]]$u))

@@ -42,6 +42,8 @@ graphROC <- function(n = 150,
     {
         cat("Starting ROC simulations\nn = ", 
             n, "\np = ", p, "\ngraph structure = ", graphType, 
+            "\ngraph parameters: v = ", graphParameters$v, "u = ",
+            graphParameters$u, "prob = ", graphParameters$prob,
             "\nsimulations number = ", iterations)
         
         progressBar <- txtProgressBar(min = 0, max = iterations, style = 3)

@@ -33,7 +33,7 @@ graphDF = data.frame(graphParameters)
 results %>%
     merge(graphDF) -> results
 
-filenameAll <- paste0("AllOneSimulations_Num_BIS@", format(Sys.time(), '%y_%m_%d_%H_%M'), "#",nrow(finalResults))
+filenameAll <- paste0("AllOneSimulations_Num_BIS@", format(Sys.time(), '%y_%m_%d_%H_%M'), "#", nrow(results))
 
 save(results, graphParameters,
      file = paste0("./!02 Data/01 Binded/", filenameAll, ".RData"))

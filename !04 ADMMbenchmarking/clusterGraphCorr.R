@@ -35,10 +35,11 @@ graphStructure_m1_1 <- list(v = -1,
 cl<-makeCluster(2) #your number of CPU cores
 registerDoSNOW(cl)
 
-doparList <-list(list(clusters[-(1:22),], graphStructure_07_03),
-                 list(clusters[-(1:20),], graphStructure_08_02),
+doparList <-list(list(clusters, graphStructure_07_03),
+                 list(clusters, graphStructure_08_02),
                  list(clusters, graphStructure_m05_1),
                  list(clusters, graphStructure_m1_1))
+
 results <- list() 
 results <- foreach(i = doparList) %dopar% {
     source("fastSimulationsFunctions.R")
