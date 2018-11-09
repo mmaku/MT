@@ -8,9 +8,6 @@ require(tidyr, quietly = TRUE)
 require(tibble, quietly = TRUE)
 
 load("./!02 Data/01 Binded/01 AllOne/ROCfinal.RData")
-load("./!02 Data/01 Binded/ROC5.RData")
-
-
 
 result <- resultsList[[1]]
 for(result in resultsList)
@@ -36,9 +33,8 @@ for(result in resultsList)
     
     result$finalResults %>%
         # select(-multiplier) %>%
-        ggplot(aes(x = 1-SP, y = SN, color = method, size = multiplier)) +
+        ggplot(aes(x = 1-SP, y = SN, color = method)) +
         geom_line(size = 1) +
-        geom_point() +
         ylim(c(0,1)) +
         xlim(c(0,1)) +
         labs(subtitle = paste0("Setup: scaled $\\alpha$ = $0.05$, $100",
