@@ -41,7 +41,7 @@ simulations <- function(simulationMatrix,
     if(saveAll)
     {
         filenameAll <- paste0("AllSimulations", fileName, "@", format(Sys.time(), '%y_%m_%d@%H_%M'), "#",
-                              NROW(simulationMatrix)*3)
+                              NROW(simulationMatrix)*4)
     }
     
     output <- list()

@@ -8,6 +8,7 @@ require(reshape2, quietly = TRUE)
 require(R.utils, quietly = TRUE)
 require(tikzDevice, quietly = TRUE)
 require(dplyr, quietly = TRUE)
+require(colorRamps, quietly = TRUE)
 
 modelList <- list()
 
@@ -29,11 +30,12 @@ for(m in modelList)
     MR <- round((m$v + m$u)/m$v, digits = 2)
     
     model <- doCall("huge.generator", 
-                    n = 50, d = 50, graph = "cluster", verbose = FALSE, vis = FALSE,
+                    n = 30, d = 30, g=3, graph = "cluster", verbose = FALSE, vis = FALSE,
                     args = m)
     
     df <- rbind(df,
-                cbind(melt(model$sigma), MR, type = "Covariance matrix"),
+                cbind(melt(model$sigmahat), MR, type = "Sample covariance matrix"),
+                cbind(melt(model$sigma), MR, type = "True covariance matrix"),
                 cbind(melt(model$omega), MR, type = "Precision matrix"))
 }
 
@@ -56,7 +58,7 @@ ggplot(df, aes(x=Var1, y=Var2, fill = value)) +
     labs(subtitle = "",
          y = "",
          x = "") +
-    scale_fill_gradientn(colors = topo.colors(50)) +
+    scale_fill_gradientn(colors = matlab.like(275)[(1:6)*50-25]) +
     theme_bw(base_size = 8) +
     # theme(aspect.ratio = 8/16, 
     #       plot.margin = margin(c(0,0,0,0)),
@@ -66,10 +68,10 @@ ggplot(df, aes(x=Var1, y=Var2, fill = value)) +
           legend.position="none") -> myPlot
 
 
-ggsave("!01 Plots/02 Other/MR.png", myPlot, 
+ggsave("!01 Plots/02 Other/MR_cluster.png", myPlot, 
        width = 5.4, height = 5.4*myPlot$theme$aspect.ratio)
 
-tikzTitle <- "!01 Plots/02 Other/MR.tikz"
+tikzTitle <- "!01 Plots/02 Other/MR_cluster.tikz"
 
 tikz(file = tikzTitle, 
      width = 5.4, height = 5.4*myPlot$theme$aspect.ratio )
@@ -80,12 +82,6 @@ lines <- readLines(con = tikzTitle)
 lines <- lines[-which(grepl("\\path\\[clip\\]*", x = lines, perl=F))]
 lines <- lines[-which(grepl("\\path\\[use as bounding box*", x = lines, perl=F))]
 lines <- gsub(pattern = "SNR", replace = "\\SNR", x = lines, fixed = TRUE)
-
-linesCopy <- lines
-# lines <- linesCopy
-
-tikzTitle <- "!01 Plots/02 Other/MR0.tikz"
-writeLines(lines,con = tikzTitle)
 
 for(lineNo in seq_along(lines))
 {
@@ -101,33 +97,32 @@ for(lineNo in seq_along(lines))
         break
 }
 
-tikzTitle <- "!01 Plots/02 Other/MR1.tikz"
 writeLines(lines,con = tikzTitle)
-
-for(lineNo in seq_along(lines))
-{
-    if(substr(lines[lineNo], 39, 47) == "rectangle")
-    {
-        for(lineNo2 in (lineNo+1):length(lines)) 
-        {
-            if(substr(lines[lineNo2], 39, 47) == "rectangle" &
-               substr(lines[lineNo2-2], 30, 41) == substr(lines[lineNo-2], 30, 41) &
-               substr(lines[lineNo], 24, 29) == substr(lines[lineNo2], 24, 29) &
-               substr(lines[lineNo], 50, 55) == substr(lines[lineNo2], 50, 55) &
-               substr(lines[lineNo], 57, 62) == substr(lines[lineNo2], 31, 36)) 
-            {
-                substr(lines[lineNo], 57, 62) <- substr(lines[lineNo2], 57, 62)
-                lines <- lines[-(lineNo2 - 0:2)]
-                lineNo2 = lineNo2-4
-            }
-            if(lineNo2 >= length(lines))
-                break
-        }
-    }
-    
-    if(lineNo > length(lines)-3)
-        break
-}
-
-tikzTitle <- "!01 Plots/02 Other/MR3.tikz"
-writeLines(lines,con = tikzTitle)
+#
+# for(lineNo in seq_along(lines))
+# {
+#     if(substr(lines[lineNo], 39, 47) == "rectangle")
+#     {
+#         for(lineNo2 in (lineNo+1):length(lines))
+#         {
+#             if(substr(lines[lineNo2], 39, 47) == "rectangle" &
+#                substr(lines[lineNo2-2], 30, 41) == substr(lines[lineNo-2], 30, 41) &
+#                substr(lines[lineNo], 24, 29) == substr(lines[lineNo2], 24, 29) &
+#                substr(lines[lineNo], 50, 55) == substr(lines[lineNo2], 50, 55) &
+#                substr(lines[lineNo], 57, 62) == substr(lines[lineNo2], 31, 36))
+#             {
+#                 substr(lines[lineNo], 57, 62) <- substr(lines[lineNo2], 57, 62)
+#                 lines <- lines[-(lineNo2 - 0:2)]
+#                 lineNo2 = lineNo2-4
+#             }
+#             if(lineNo2 >= length(lines))
+#                 break
+#         }
+#     }
+#
+#     if(lineNo > length(lines)-3)
+#         break
+# }
+#
+# tikzTitle <- "!01 Plots/02 Other/MR3.tikz"
+# writeLines(lines,con = tikzTitle)

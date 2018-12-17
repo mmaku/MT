@@ -30,15 +30,16 @@ bindedResults %>%
 
 finalResults <- rbind(finalResults1, finalResults2, finalResults3)
 
+finalResults %>%
+    filter(alpha == 0.2) %>%
+    mutate(SNR = round((graph.v+graph.u)/graph.v, digits = 2)) %>%
+    select(-c(algIter, p, scaled, graph.v, graph.u, graph.prob)) -> finalResults
+
 p    <- unique(finalResults$p)
 prob <- unique(finalResults$graph.prob)
 g    <- unique(finalResults$graph.g)[1]
 gt   <- unique(finalResults$graphType)[1]
 a    <- unique(finalResults$alpha)[1]
-
-finalResults %>%
-    mutate(SNR = round((graph.v+graph.u)/graph.v, digits = 2)) %>%
-    select(-c(algIter, p, scaled, graph.v, graph.u, graph.prob)) -> finalResults
 
 finalResults$SNR <- as.factor(finalResults$SNR) 
 
@@ -90,11 +91,11 @@ for(gt in unique(finalResults$graphType))
                   plot.margin = margin(c(5,0,0,0)),
                   legend.margin = margin(c(0,0,0,0))) -> myPlot
         
-        ggsave(paste0("!01 Plots/01 Results/02 Num/Number_", gt, "_", a, ".png"), myPlot, 
+        ggsave(paste0("!01 Plots/01 Results/02 Num/Poster_Number_", gt, "_", a, ".png"), myPlot, 
                width = 5.4, height = 5.4*myPlot$theme$aspect.ratio )
         dev.off()
         
-        tikzTitle <- paste0("!01 Plots/01 Results/02 Num/Number_", gt, "_", a, ".tikz")
+        tikzTitle <- paste0("!01 Plots/01 Results/02 Num/Poster_Number_", gt, "_", a, ".tikz")
         
         tikz(file = tikzTitle, 
              width = 5.4, height = 5.4*myPlot$theme$aspect.ratio )

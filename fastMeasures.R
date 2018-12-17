@@ -23,10 +23,11 @@ measures <- function(n = 150,
                      epsilon = 10e-4,
                      testLocalFDR = TRUE)
 {
-    methods <- c("banerjee.gLASSO",
+    methods <- c("gLASSO",
+                 "banerjee.gLASSO",
                  "holm.gSLOPE",
                  "BH.gSLOPE")
-    zeros <- c(0,0,0)
+    zeros <- rep_len(0, length.out = length(methods))
     results <- data.frame(procedure = methods, FDR = zeros, localFDR = zeros, 
                           Power = zeros, SP = zeros, algIter = zeros) # algIter for benchmarking
     
@@ -36,13 +37,14 @@ measures <- function(n = 150,
     
     # gLASSO parameters
     banerjeeLambda <- lambdaBanerjee(p = p, n = n, alpha = alpha)
+    gLassoLambda <- lambdaGLASSO(p = p, n = n, alpha = alpha)
     
     # gSLOPE parameters
     holmlambda <- lambdaHolm(p = p, n = n, alpha = alpha)
     BHlambda <- lambdaBH(p = p, n = n, alpha = alpha)
     
     zeros <- matrix(0, nrow = p ,ncol = p)
-    omegaHat <- list(GLB = zeros, GSH = zeros, GSBH = zeros)
+    omegaHat <- list(GL = zeros, GLB = zeros, GSH = zeros, GSBH = zeros)
     
     
     
@@ -61,6 +63,10 @@ measures <- function(n = 150,
         {
             initialMatrix <- cov(generatedData$data)
         }
+        
+        GL    <- glasso(s = initialMatrix, rho = gLassoLambda, thr = epsilon,
+                         penalize.diagonal = penalizeDiagonal)
+        omegaHat$GL <- GL$wi
         
         GLB    <- glasso(s = initialMatrix, rho = banerjeeLambda, thr = epsilon,
                          penalize.diagonal = penalizeDiagonal)
@@ -93,7 +99,7 @@ measures <- function(n = 150,
         results$Power       <- results$Power + sapply(omegaHat, function(x) SN(x, adjacent))
         results$SP          <- results$SP + sapply(omegaHat, function(x) SP(x, adjacent))
         
-        results$algIter  <- results$algIter + c(GLB$niter, GSH$iterations, GSBH$iterations)
+        results$algIter  <- results$algIter + c(GL$niter, GLB$niter, GSH$iterations, GSBH$iterations)
     }
     
     results[,-1] <- results[,-1]/iterations

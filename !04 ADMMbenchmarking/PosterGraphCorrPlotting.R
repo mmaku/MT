@@ -54,15 +54,7 @@ for(gt in unique(bindedResults$graphType))
             #            scales = "fixed", nrow = 4) +
             facet_wrap(vars(SNR), labeller = labeller(SNR = labels1), 
                        scales = "fixed", nrow = 1) +
-            labs(subtitle = paste0("Setup: $\\alpha$ = $", a, "$, $",  p,
-                                   ifelse(gt != "scale-free", 
-                                          paste0("$ variables, $", g, "$ components, "), 
-                                          "$ variables, "),
-                                   gt, " graph",
-                                   ifelse(gt == "cluster", 
-                                          paste0(", $prob(x_{ij}\\neq0)=", prob, "$."), 
-                                          ".")),
-                 y = "Value",
+            labs(y = "Value",
                  x = "Sample size $n$") +
             scale_color_discrete(name = "Procedure:") +
             scale_shape_discrete(name = "Measure:") +
@@ -77,7 +69,7 @@ for(gt in unique(bindedResults$graphType))
                   legend.direction = "horizontal",
                   legend.box = "vertical",
                   legend.spacing = unit(0, "cm"),
-                  plot.margin = margin(c(5,0,0,0)),
+                  plot.margin = margin(c(0,0,0,0)),
                   legend.margin = margin(c(0,0,0,0))) -> myPlot
         
         ggsave(paste0("!01 Plots/01 Results/03 Corr/Poster_Corr_", gt, "_", a, ".png"), myPlot, 
@@ -95,6 +87,7 @@ for(gt in unique(bindedResults$graphType))
         lines <- lines[-which(grepl("\\path\\[use as bounding box*", x = lines, perl=F))]
         lines <- gsub(pattern = "SNR", replace = "\\SNR", x = lines, fixed = TRUE)
         lines <- gsub(pattern = "prob", replace = "\\prob", x = lines, fixed = TRUE)
+        lines[3] <- "\\begin{tikzpicture}[x=2.5pt,y=2.5pt]"
         writeLines(lines,con = tikzTitle)
         
         # print(xtable(myResults,
