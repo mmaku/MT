@@ -24,6 +24,8 @@ Although I obtained some promising results, the code is still under development 
 
 ## Authors
 
+Michał Makowski
+
 ## License
 
 This project is licensed under the GPL 3.0 License - see the [LICENSE.md](LICENSE.md) file for details
