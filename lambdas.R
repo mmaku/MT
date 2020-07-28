@@ -69,6 +69,7 @@ lambdaBH <- function(p, n, alpha = 0.05, twoLargestProd = 1)
 {
     pBH <- p*(p-1)/2
     k <- 1:pBH
+    # k <- k + (p^2 - pBH)
     fractionSeq <- qt(1-alpha*k/2/pBH, df = n-2)/sqrt(n-2+qt(1-alpha*k/2/pBH, df = n-2)^2)
     fractionSeq <- c(rep(fractionSeq[1], p), rep(fractionSeq, each=2))
     
@@ -80,6 +81,7 @@ lambdaHolm <- function(p, n, alpha = 0.05, twoLargestProd = 1)
 {
     pHolm <- p*(p-1)/2
     k <- 1:pHolm
+    # k <- k + (p^2 - pHolm)
     fractionSeq <- qt(1-alpha/2/(pHolm+1-k), df = n-2)/sqrt(n-2+qt(1-alpha/2/(pHolm+1-k), df = n-2)^2)
     fractionSeq <- c(rep(fractionSeq[1], p), rep(fractionSeq, each=2))
     
