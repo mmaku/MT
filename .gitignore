@@ -1,8 +1,8 @@
 !.gitignore
 
 Folders
-\!01 Plots/
-\!02 Data/
+\02 Plots/
+\05 Data/
 .Rproj.user/
 
 # Plots
